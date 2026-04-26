@@ -1,0 +1,342 @@
+[
+  {
+    "name": "Software Engineer (Backend)",
+    "slug": "software-engineer-backend",
+    "description": "Design and build the server-side logic, databases, and APIs that power modern applications. Backend engineers focus on performance, reliability, and scalability of distributed systems.",
+    "required_skills": ["Python", "REST APIs", "SQL", "Git", "Data Structures", "Algorithms"],
+    "optional_skills": ["Docker", "Kubernetes", "Redis", "Message Queues", "GraphQL", "gRPC", "System Design"],
+    "personality_fit": {
+      "openness": 65,
+      "conscientiousness": 80,
+      "extraversion": 35,
+      "agreeableness": 55,
+      "neuroticism": 30
+    },
+    "difficulty": "medium",
+    "growth_potential": "high",
+    "category": "Software Engineering"
+  },
+  {
+    "name": "Frontend Developer",
+    "slug": "frontend-developer",
+    "description": "Build the user-facing side of web applications using modern JavaScript frameworks. Frontend developers focus on performance, accessibility, and creating seamless, responsive user experiences.",
+    "required_skills": ["HTML", "CSS", "JavaScript", "React", "TypeScript", "Git"],
+    "optional_skills": ["Next.js", "Testing", "Web Performance", "Accessibility", "GraphQL", "Animation", "Web Components"],
+    "personality_fit": {
+      "openness": 70,
+      "conscientiousness": 65,
+      "extraversion": 45,
+      "agreeableness": 60,
+      "neuroticism": 35
+    },
+    "difficulty": "medium",
+    "growth_potential": "high",
+    "category": "Software Engineering"
+  },
+  {
+    "name": "Mobile Developer",
+    "slug": "mobile-developer",
+    "description": "Build native or cross-platform mobile applications for iOS and Android. Mobile developers focus on performance, offline support, device APIs, and publishing to app stores.",
+    "required_skills": ["Swift or Kotlin", "Mobile UI Patterns", "REST APIs", "Git", "Debugging", "App Store Publishing"],
+    "optional_skills": ["React Native", "Flutter", "Push Notifications", "Offline Storage", "Performance Profiling", "In-App Purchases", "CI/CD"],
+    "personality_fit": {
+      "openness": 65,
+      "conscientiousness": 75,
+      "extraversion": 40,
+      "agreeableness": 55,
+      "neuroticism": 30
+    },
+    "difficulty": "medium",
+    "growth_potential": "high",
+    "category": "Software Engineering"
+  },
+  {
+    "name": "DevOps Engineer",
+    "slug": "devops-engineer",
+    "description": "Build and maintain infrastructure, CI/CD pipelines, and operational tooling that enable teams to ship software reliably and at speed. DevOps engineers bridge development and operations.",
+    "required_skills": ["Linux", "Docker", "CI/CD", "Cloud Platforms", "Scripting", "Networking"],
+    "optional_skills": ["Kubernetes", "Terraform", "Ansible", "Prometheus", "Grafana", "Site Reliability Engineering", "Security"],
+    "personality_fit": {
+      "openness": 60,
+      "conscientiousness": 85,
+      "extraversion": 35,
+      "agreeableness": 50,
+      "neuroticism": 30
+    },
+    "difficulty": "high",
+    "growth_potential": "high",
+    "category": "Infrastructure & Operations"
+  },
+  {
+    "name": "Cloud Solutions Architect",
+    "slug": "cloud-solutions-architect",
+    "description": "Design scalable, secure, and cost-efficient cloud infrastructure. Cloud architects guide technical strategy and help organizations migrate and optimize workloads across major cloud providers.",
+    "required_skills": ["Cloud Platforms", "Networking", "System Design", "Security", "Linux", "Infrastructure as Code"],
+    "optional_skills": ["AWS", "Azure", "GCP", "Kubernetes", "Cost Optimization", "Multi-cloud", "Serverless"],
+    "personality_fit": {
+      "openness": 65,
+      "conscientiousness": 80,
+      "extraversion": 45,
+      "agreeableness": 55,
+      "neuroticism": 25
+    },
+    "difficulty": "high",
+    "growth_potential": "high",
+    "category": "Infrastructure & Operations"
+  },
+  {
+    "name": "Database Administrator",
+    "slug": "database-administrator",
+    "description": "Design, implement, and maintain database systems to ensure reliability, performance, and data integrity. DBAs manage backups, replication, query optimization, and access controls.",
+    "required_skills": ["SQL", "Database Design", "Performance Tuning", "Backup & Recovery", "Security", "Linux"],
+    "optional_skills": ["PostgreSQL", "MySQL", "NoSQL", "Replication", "Monitoring", "Cloud Databases", "Data Warehousing"],
+    "personality_fit": {
+      "openness": 50,
+      "conscientiousness": 90,
+      "extraversion": 30,
+      "agreeableness": 50,
+      "neuroticism": 25
+    },
+    "difficulty": "medium",
+    "growth_potential": "medium",
+    "category": "Infrastructure & Operations"
+  },
+  {
+    "name": "Data Scientist",
+    "slug": "data-scientist",
+    "description": "Extract insights from complex datasets using statistical analysis, machine learning, and visualization. Data scientists translate business problems into analytical solutions and communicate findings to stakeholders.",
+    "required_skills": ["Python", "Statistics", "Machine Learning", "SQL", "Data Visualization", "Pandas"],
+    "optional_skills": ["R", "Deep Learning", "NLP", "Spark", "Tableau", "A/B Testing", "Feature Engineering"],
+    "personality_fit": {
+      "openness": 75,
+      "conscientiousness": 75,
+      "extraversion": 35,
+      "agreeableness": 50,
+      "neuroticism": 35
+    },
+    "difficulty": "high",
+    "growth_potential": "high",
+    "category": "Data & Analytics"
+  },
+  {
+    "name": "Data Analyst",
+    "slug": "data-analyst",
+    "description": "Collect, clean, and analyze data to help organizations make informed decisions. Data analysts build dashboards, run queries, and communicate insights clearly to non-technical stakeholders.",
+    "required_skills": ["SQL", "Excel", "Data Visualization", "Statistics", "Business Acumen", "Communication"],
+    "optional_skills": ["Python", "Tableau", "Power BI", "A/B Testing", "Google Analytics", "R", "ETL"],
+    "personality_fit": {
+      "openness": 60,
+      "conscientiousness": 75,
+      "extraversion": 45,
+      "agreeableness": 55,
+      "neuroticism": 35
+    },
+    "difficulty": "low",
+    "growth_potential": "medium",
+    "category": "Data & Analytics"
+  },
+  {
+    "name": "Machine Learning Engineer",
+    "slug": "machine-learning-engineer",
+    "description": "Build production-ready ML systems by bridging data science research and scalable software engineering. ML engineers deploy, monitor, and optimize models at scale in real-world environments.",
+    "required_skills": ["Python", "Machine Learning", "Deep Learning", "MLOps", "Software Engineering", "SQL"],
+    "optional_skills": ["PyTorch", "TensorFlow", "Kubernetes", "Feature Stores", "Data Pipelines", "Model Monitoring", "CUDA"],
+    "personality_fit": {
+      "openness": 70,
+      "conscientiousness": 80,
+      "extraversion": 35,
+      "agreeableness": 50,
+      "neuroticism": 30
+    },
+    "difficulty": "high",
+    "growth_potential": "high",
+    "category": "Artificial Intelligence"
+  },
+  {
+    "name": "AI Research Scientist",
+    "slug": "ai-research-scientist",
+    "description": "Advance the state of the art in artificial intelligence through original research in deep learning, reinforcement learning, NLP, and computer vision. Publish findings and collaborate with engineering to transfer research to products.",
+    "required_skills": ["Deep Learning", "Mathematics", "Python", "Research Methodology", "Scientific Writing", "Statistics"],
+    "optional_skills": ["PyTorch", "TensorFlow", "Reinforcement Learning", "NLP", "Computer Vision", "GPU Programming", "LaTeX"],
+    "personality_fit": {
+      "openness": 90,
+      "conscientiousness": 80,
+      "extraversion": 30,
+      "agreeableness": 50,
+      "neuroticism": 35
+    },
+    "difficulty": "high",
+    "growth_potential": "high",
+    "category": "Artificial Intelligence"
+  },
+  {
+    "name": "Cybersecurity Analyst",
+    "slug": "cybersecurity-analyst",
+    "description": "Protect organizations from digital threats by monitoring systems, investigating incidents, assessing vulnerabilities, and implementing defensive controls. Cybersecurity analysts are the first line of defense against breaches.",
+    "required_skills": ["Network Security", "Threat Analysis", "SIEM", "Incident Response", "Linux", "Security Frameworks"],
+    "optional_skills": ["Penetration Testing", "Malware Analysis", "Cloud Security", "Python Scripting", "Forensics", "OSINT", "Compliance"],
+    "personality_fit": {
+      "openness": 65,
+      "conscientiousness": 85,
+      "extraversion": 35,
+      "agreeableness": 45,
+      "neuroticism": 25
+    },
+    "difficulty": "high",
+    "growth_potential": "high",
+    "category": "Security"
+  },
+  {
+    "name": "UX/UI Designer",
+    "slug": "ux-ui-designer",
+    "description": "Create intuitive, accessible, and visually engaging digital experiences. UX/UI designers bridge user needs and technical constraints through research, wireframing, prototyping, and iterative testing.",
+    "required_skills": ["Figma", "User Research", "Wireframing", "Prototyping", "Visual Design", "Usability Testing"],
+    "optional_skills": ["Motion Design", "Design Systems", "Accessibility", "HTML/CSS", "Sketch", "Adobe XD", "Information Architecture"],
+    "personality_fit": {
+      "openness": 85,
+      "conscientiousness": 65,
+      "extraversion": 55,
+      "agreeableness": 70,
+      "neuroticism": 35
+    },
+    "difficulty": "medium",
+    "growth_potential": "high",
+    "category": "Design"
+  },
+  {
+    "name": "Product Manager",
+    "slug": "product-manager",
+    "description": "Define the vision, strategy, and roadmap for software products. Product managers coordinate across engineering, design, and business to deliver products that meet user needs and business goals simultaneously.",
+    "required_skills": ["Product Strategy", "Roadmapping", "Stakeholder Management", "User Stories", "Data Analysis", "Communication"],
+    "optional_skills": ["SQL", "A/B Testing", "OKRs", "Agile", "Competitive Analysis", "Pricing Strategy", "Figma"],
+    "personality_fit": {
+      "openness": 70,
+      "conscientiousness": 75,
+      "extraversion": 70,
+      "agreeableness": 65,
+      "neuroticism": 30
+    },
+    "difficulty": "high",
+    "growth_potential": "high",
+    "category": "Product"
+  },
+  {
+    "name": "Business Analyst",
+    "slug": "business-analyst",
+    "description": "Bridge the gap between business needs and technical solutions. Business analysts gather requirements, model processes, and help stakeholders align on priorities before development begins.",
+    "required_skills": ["Requirements Gathering", "Process Modeling", "Communication", "SQL", "Documentation", "Stakeholder Management"],
+    "optional_skills": ["Agile", "BPMN", "Data Analysis", "Excel", "Jira", "Change Management", "Wireframing"],
+    "personality_fit": {
+      "openness": 60,
+      "conscientiousness": 75,
+      "extraversion": 65,
+      "agreeableness": 70,
+      "neuroticism": 30
+    },
+    "difficulty": "medium",
+    "growth_potential": "medium",
+    "category": "Business & Strategy"
+  },
+  {
+    "name": "Technical Writer",
+    "slug": "technical-writer",
+    "description": "Create clear, accurate documentation for software products including API references, user guides, tutorials, and developer docs. Technical writers make complex systems understandable to diverse audiences.",
+    "required_skills": ["Technical Writing", "Documentation Tools", "Research", "Communication", "Editing", "Information Architecture"],
+    "optional_skills": ["Markdown", "API Documentation", "Git", "Docs-as-Code", "HTML/CSS", "Developer Experience", "Video Production"],
+    "personality_fit": {
+      "openness": 65,
+      "conscientiousness": 80,
+      "extraversion": 40,
+      "agreeableness": 65,
+      "neuroticism": 30
+    },
+    "difficulty": "low",
+    "growth_potential": "medium",
+    "category": "Communication & Content"
+  },
+  {
+    "name": "Network Engineer",
+    "slug": "network-engineer",
+    "description": "Design, implement, and maintain computer networks including LANs, WANs, and cloud network infrastructure. Network engineers ensure connectivity, throughput, and security across an organization's systems.",
+    "required_skills": ["Networking Protocols", "Routing & Switching", "Firewalls", "Network Security", "Linux", "Troubleshooting"],
+    "optional_skills": ["SDN", "BGP", "MPLS", "VPN", "Wireless Networks", "Network Automation", "Cloud Networking"],
+    "personality_fit": {
+      "openness": 50,
+      "conscientiousness": 85,
+      "extraversion": 35,
+      "agreeableness": 50,
+      "neuroticism": 25
+    },
+    "difficulty": "medium",
+    "growth_potential": "medium",
+    "category": "Infrastructure & Operations"
+  },
+  {
+    "name": "QA Engineer",
+    "slug": "qa-engineer",
+    "description": "Ensure software quality through systematic testing, automation, and process improvement. QA engineers write test plans, build automated suites, and advocate for reliability across the development lifecycle.",
+    "required_skills": ["Test Planning", "Manual Testing", "Test Automation", "Bug Reporting", "Regression Testing", "Communication"],
+    "optional_skills": ["Selenium", "Cypress", "API Testing", "Performance Testing", "CI/CD", "Python or JavaScript", "Security Testing"],
+    "personality_fit": {
+      "openness": 55,
+      "conscientiousness": 90,
+      "extraversion": 40,
+      "agreeableness": 60,
+      "neuroticism": 30
+    },
+    "difficulty": "medium",
+    "growth_potential": "medium",
+    "category": "Software Engineering"
+  },
+  {
+    "name": "Digital Marketing Analyst",
+    "slug": "digital-marketing-analyst",
+    "description": "Measure and optimize digital marketing campaigns across SEO, paid ads, email, and social channels. Digital marketing analysts use data to improve acquisition, conversion, and retention metrics.",
+    "required_skills": ["Google Analytics", "SEO", "Paid Advertising", "Data Analysis", "Excel", "Communication"],
+    "optional_skills": ["Python", "SQL", "A/B Testing", "CRM Systems", "Marketing Automation", "Social Media Analytics", "Content Strategy"],
+    "personality_fit": {
+      "openness": 65,
+      "conscientiousness": 70,
+      "extraversion": 60,
+      "agreeableness": 60,
+      "neuroticism": 35
+    },
+    "difficulty": "low",
+    "growth_potential": "medium",
+    "category": "Marketing & Growth"
+  },
+  {
+    "name": "Healthcare Informatics Specialist",
+    "slug": "healthcare-informatics-specialist",
+    "description": "Apply information technology to improve healthcare delivery and patient outcomes. Healthcare informatics specialists manage EHR systems, analyze clinical data, and support digital health initiatives while navigating strict regulatory requirements.",
+    "required_skills": ["Health IT Systems", "Data Analysis", "Clinical Workflow", "Privacy & Compliance", "Communication", "Documentation"],
+    "optional_skills": ["HL7/FHIR", "SQL", "EHR Platforms", "Telehealth", "Clinical Terminology", "Project Management", "Python"],
+    "personality_fit": {
+      "openness": 60,
+      "conscientiousness": 80,
+      "extraversion": 55,
+      "agreeableness": 75,
+      "neuroticism": 30
+    },
+    "difficulty": "medium",
+    "growth_potential": "high",
+    "category": "Healthcare Technology"
+  },
+  {
+    "name": "Blockchain Developer",
+    "slug": "blockchain-developer",
+    "description": "Build decentralized applications, smart contracts, and blockchain infrastructure. Blockchain developers work on DeFi protocols, tokenization platforms, and enterprise distributed ledger solutions requiring deep security awareness.",
+    "required_skills": ["Solidity or Rust", "Smart Contracts", "Blockchain Fundamentals", "JavaScript or Python", "Cryptography", "Git"],
+    "optional_skills": ["Web3.js", "Hardhat", "DeFi Protocols", "Layer 2 Solutions", "NFT Standards", "DAO Governance", "Security Auditing"],
+    "personality_fit": {
+      "openness": 80,
+      "conscientiousness": 75,
+      "extraversion": 40,
+      "agreeableness": 50,
+      "neuroticism": 35
+    },
+    "difficulty": "high",
+    "growth_potential": "high",
+    "category": "Emerging Technology"
+  }
+]
