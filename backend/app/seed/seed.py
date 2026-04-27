@@ -25,7 +25,14 @@ async def seed_careers() -> int:
             if existing.scalar_one_or_none() is not None:
                 continue
 
-            session.add(Career(id=uuid.uuid4(), **entry))
+            session.add(
+                Career(
+                    id=uuid.uuid4(),
+                    source="manual",
+                    verified=True,
+                    **entry,
+                )
+            )
             inserted += 1
 
         await session.commit()

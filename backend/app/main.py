@@ -3,12 +3,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.routers import analyze, careers, health, profiles, recommendations
+from app.routers import admin, analyze, careers, health, profiles, recommendations
 
 app = FastAPI(
-    title="Echelon v2",
+    title="Echelon v2.1",
     description="AI-assisted career intelligence API",
-    version="2.0.0",
+    version="2.1.0",
 )
 
 app.add_middleware(
@@ -37,6 +37,21 @@ async def http_exception_handler(request, exc: HTTPException) -> JSONResponse:
     )
 
 
+def _safe_errors(exc: RequestValidationError) -> list:
+    # Pydantic v2 model_validator errors can place exception objects in ctx,
+    # which aren't JSON-serializable. Convert anything non-primitive to str.
+    def _sanitize(obj):
+        if isinstance(obj, dict):
+            return {k: _sanitize(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [_sanitize(i) for i in obj]
+        if isinstance(obj, (str, int, float, bool, type(None))):
+            return obj
+        return str(obj)
+
+    return _sanitize(exc.errors())
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError) -> JSONResponse:
     return JSONResponse(
@@ -45,7 +60,7 @@ async def validation_exception_handler(request, exc: RequestValidationError) -> 
             "error": {
                 "code": "VALIDATION_ERROR",
                 "message": "Request validation failed",
-                "details": {"errors": exc.errors()},
+                "details": {"errors": _safe_errors(exc)},
             }
         },
     )
@@ -56,3 +71,4 @@ app.include_router(profiles.router, prefix="/api")
 app.include_router(careers.router, prefix="/api")
 app.include_router(recommendations.router, prefix="/api")
 app.include_router(analyze.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")

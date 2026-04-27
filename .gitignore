@@ -31,6 +31,9 @@ next-env.d.ts
 # Docker volumes
 postgres_data/
 
+# O*NET source data (downloaded by user, not committed)
+data/onet/
+
 # OS
 .DS_Store
 Thumbs.db

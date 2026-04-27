@@ -9,12 +9,19 @@ Scoring components (all in [0, 1] except optional which is [0, 0.3]):
 
 Weighted total (weights sum to 1.0):
   0.45 × skill  +  0.15 × optional  +  0.25 × personality  +  0.15 × interest
+
+Education soft penalty (applied after the weighted sum):
+  If the user's education_level is "high_school" and the career's difficulty
+  is "high" (corresponding to O*NET Job Zones 4–5), the total score is
+  multiplied by 0.7.  The career is NOT filtered out — it remains visible
+  as a stretch goal.  No penalty applies for any other education/difficulty
+  combination.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import NotRequired, Required, TypedDict
 
 # ---------------------------------------------------------------------------
 # Input types (plain dicts — no ORM dependency so this module is easily tested)
@@ -29,11 +36,16 @@ WEIGHTS = {
     "interest": 0.15,
 }
 
+# Multiply total score by this factor when user has high_school education
+# and the career requires high preparation (difficulty = "high").
+EDUCATION_PENALTY_FACTOR = 0.7
+
 
 class ProfileData(TypedDict):
-    skills: list[str]
-    interests: list[str]
-    personality: dict[str, int]
+    skills: Required[list[str]]
+    interests: Required[list[str]]
+    personality: Required[dict[str, int]]
+    education_level: NotRequired[str]  # omitting = no education penalty applied
 
 
 class CareerData(TypedDict):
@@ -45,6 +57,7 @@ class CareerData(TypedDict):
     required_skills: list[str]
     optional_skills: list[str]
     personality_fit: dict[str, int]
+    difficulty: NotRequired[str]  # omitting = no education penalty applied
 
 
 # ---------------------------------------------------------------------------
@@ -108,6 +121,19 @@ def compute_interest_score(interests: list[str], career: CareerData) -> float:
     return matched / len(interests)
 
 
+def apply_education_penalty(total_score: float, education_level: str, difficulty: str) -> float:
+    """
+    Apply a soft downrank for under-qualified profiles.
+
+    Rule: high_school education + high difficulty career → multiply by 0.7.
+    All other combinations are unchanged.
+    The career is never filtered out — it remains a visible stretch goal.
+    """
+    if education_level == "high_school" and difficulty == "high":
+        return total_score * EDUCATION_PENALTY_FACTOR
+    return total_score
+
+
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
@@ -117,10 +143,12 @@ def rank_careers(profile: ProfileData, careers: list[CareerData]) -> list[Scored
     """
     Score every career against the profile and return the top 10, best first.
 
-    This is the sole public entry point for Phase 3.  Phase 4 will pass the
-    output of this function to the LLM re-ranker to produce the final top 5.
+    This is the sole public entry point for the rule-based stage.  The LLM
+    re-ranker (services/ranker.py) takes the output of this function and
+    produces the final top 5.
     """
     user_skills = {s.lower() for s in profile["skills"]}
+    education_level = profile.get("education_level", "")
 
     scored: list[ScoredCareer] = []
     for career in careers:
@@ -135,6 +163,8 @@ def rank_careers(profile: ProfileData, careers: list[CareerData]) -> list[Scored
             + WEIGHTS["personality"] * personality
             + WEIGHTS["interest"] * interest
         )
+
+        total = apply_education_penalty(total, education_level, career.get("difficulty", ""))
 
         scored.append(
             ScoredCareer(

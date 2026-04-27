@@ -9,12 +9,21 @@ import {
   CheckCircle2,
   XCircle,
   ArrowLeft,
+  ExternalLink,
+  Sparkles,
+  Info,
 } from "lucide-react";
 import Link from "next/link";
 
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { RankedCareer, RoadmapPhase, RuleScores } from "@/lib/types";
+import type {
+  CareerSource,
+  ProposedCareer,
+  RankedCareer,
+  RoadmapPhase,
+  RuleScores,
+} from "@/lib/types";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +34,33 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
+// ── Source badge ──────────────────────────────────────────────────────────────
+
+const SOURCE_LABEL: Record<CareerSource, string> = {
+  onet: "O*NET",
+  manual: "Curated",
+  llm_proposed: "AI Suggested",
+};
+
+const SOURCE_STYLES: Record<CareerSource, string> = {
+  onet: "bg-blue-50 text-blue-600 border-blue-200",
+  manual: "bg-slate-50 text-slate-500 border-slate-200",
+  llm_proposed: "bg-amber-50 text-amber-600 border-amber-200",
+};
+
+function SourceBadge({ source }: { source: CareerSource }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border tracking-wide",
+        SOURCE_STYLES[source],
+      )}
+    >
+      {SOURCE_LABEL[source]}
+    </span>
+  );
+}
 
 // ── Confidence ring ───────────────────────────────────────────────────────────
 
@@ -215,15 +251,31 @@ function CareerCard({
           <div className="flex items-start gap-2.5 min-w-0">
             <RankBadge rank={rank} />
             <div className="min-w-0">
-              <h2
-                className={cn(
-                  "font-bold text-slate-900 leading-tight",
-                  rank === 1 ? "text-xl" : "text-base",
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2
+                  className={cn(
+                    "font-bold text-slate-900 leading-tight",
+                    rank === 1 ? "text-xl" : "text-base",
+                  )}
+                >
+                  {career.name}
+                </h2>
+                {career.source && <SourceBadge source={career.source} />}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-xs text-slate-500">{career.category}</span>
+                {career.external_url && (
+                  <a
+                    href={career.external_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-0.5 text-xs text-blue-500 hover:text-blue-700 transition-colors"
+                  >
+                    View on O*NET
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
                 )}
-              >
-                {career.name}
-              </h2>
-              <span className="text-xs text-slate-500">{career.category}</span>
+              </div>
             </div>
           </div>
           <ConfidenceRing
@@ -337,6 +389,34 @@ function CareerCard({
   );
 }
 
+// ── Proposed career card ──────────────────────────────────────────────────────
+
+function ProposedCareerCard({ career }: { career: ProposedCareer }) {
+  return (
+    <div className="bg-white rounded-xl border border-amber-200 shadow-sm p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-base font-bold text-slate-900 leading-tight">
+              {career.name}
+            </h3>
+            <SourceBadge source="llm_proposed" />
+          </div>
+          <span className="text-xs text-slate-500">{career.category}</span>
+        </div>
+      </div>
+      <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+        {career.description}
+      </p>
+      {career.rationale && (
+        <p className="mt-2 text-xs text-amber-700 italic border-t border-amber-100 pt-2">
+          {career.rationale}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
 function ResultsSkeleton() {
@@ -376,6 +456,7 @@ export default function ResultsPage() {
   };
 
   const careers = data?.result.ranked_careers ?? [];
+  const proposed = data?.result.proposed_careers ?? [];
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -449,6 +530,38 @@ export default function ResultsPage() {
                   <CareerCard key={career.slug} career={career} rank={i + 2} />
                 ))}
               </div>
+            )}
+
+            {/* AI-proposed careers */}
+            {proposed.length > 0 && (
+              <section className="mt-8">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  <h2 className="text-sm font-semibold text-slate-700">
+                    AI-Generated Suggestions
+                  </h2>
+                  <span
+                    className="inline-flex items-center gap-1 text-xs text-slate-400 cursor-help"
+                    title="These careers were invented by the AI because your profile didn't closely match existing options. They may not yet exist as established roles — treat them as inspiration."
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                    Experimental
+                  </span>
+                </div>
+                <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-3">
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    Your profile didn&apos;t closely match our career database, so our AI
+                    generated these suggestions based on your unique combination of
+                    skills and interests. These are not verified roles — they&apos;re
+                    creative possibilities to explore.
+                  </p>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {proposed.map((career) => (
+                    <ProposedCareerCard key={career.slug} career={career} />
+                  ))}
+                </div>
+              </section>
             )}
           </div>
         )}

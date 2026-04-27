@@ -329,6 +329,129 @@ def build_gap_roadmap_messages_strict(
 
 
 # ---------------------------------------------------------------------------
+# Proposal — Stage 2.5: low-fit career suggestion
+# Used in: services/proposer.py
+# Temperature: 0.5 (needs creativity)   Max tokens: 1024
+# ---------------------------------------------------------------------------
+
+PROPOSAL_SYSTEM_PROMPT = """\
+You are a career discovery assistant. The user's profile does not match standard \
+occupations well. Suggest 1–2 emerging, niche, or hybrid careers that genuinely \
+suit their skills, interests, and personality.
+
+Return ONLY a valid JSON object — no markdown, no code fences, no text outside:
+
+{
+  "proposed_careers": [
+    {
+      "name": "<specific career title>",
+      "description": "<exactly 2 sentences, at least 50 characters total>",
+      "category": "<broad occupational category>",
+      "required_skills": ["<skill>", "..."],
+      "optional_skills": ["<skill>", "..."],
+      "personality_fit": {
+        "openness": <0-100>,
+        "conscientiousness": <0-100>,
+        "extraversion": <0-100>,
+        "agreeableness": <0-100>,
+        "neuroticism": <0-100>
+      },
+      "difficulty": "low|medium|high",
+      "growth_potential": "low|medium|high",
+      "rationale": "<2-3 sentences specific to this user's profile>"
+    }
+  ]
+}
+
+Rules:
+- proposed_careers: 1 or 2 items — do not exceed 2
+- name: a plausible real or emerging career title, not generic like "Tech Worker"
+- required_skills: 5–8 specific, learnable skills
+- optional_skills: 0–5 items (empty list is acceptable)
+- description: minimum 50 characters total
+- rationale: must reference this user's actual skills, interests, or personality traits
+- Do NOT propose careers that closely duplicate the existing poor-match careers listed
+- All personality_fit values must be integers 0–100
+"""
+
+PROPOSAL_SYSTEM_PROMPT_STRICT = """\
+Your previous response did not match the required schema. Fix it now.
+
+Required JSON:
+{
+  "proposed_careers": [
+    {
+      "name": "<string, min 3 chars>",
+      "description": "<string, min 50 chars>",
+      "category": "<string>",
+      "required_skills": ["<5 to 8 strings>"],
+      "optional_skills": ["<0 to 5 strings>"],
+      "personality_fit": {"openness":<int>,"conscientiousness":<int>,"extraversion":<int>,"agreeableness":<int>,"neuroticism":<int>},
+      "difficulty": "low|medium|high",
+      "growth_potential": "low|medium|high",
+      "rationale": "<string, min 20 chars>"
+    }
+  ]
+}
+
+CRITICAL:
+- 1 or 2 items in proposed_careers — not 0, not 3+
+- All personality_fit values must be integers (not strings, not floats)
+- required_skills must have 5–8 items
+- Return ONLY the JSON object, nothing else
+"""
+
+
+def build_proposal_messages(
+    profile: ProfileData,
+    poor_match_names: list[str],
+) -> list[dict]:
+    """
+    Build messages for the LLM career proposal call.
+
+    Inputs:
+      profile          — the user's profile data dict
+      poor_match_names — names of the top-scoring verified careers (context for what NOT to duplicate)
+
+    Expected output: JSON matching ProposalOutput schema (1–2 proposed careers).
+    """
+    existing_list = "\n".join(f"- {n}" for n in poor_match_names[:5])
+    user_content = "\n\n".join(
+        [
+            _format_profile(profile),
+            f"## Existing Careers (poor matches — do not duplicate these)\n{existing_list}",
+            "## Task\nPropose 1–2 emerging or niche careers that would genuinely suit "
+            "this user better. Return the JSON object described in the system prompt.",
+        ]
+    )
+    return [
+        {"role": "system", "content": PROPOSAL_SYSTEM_PROMPT},
+        {"role": "user", "content": user_content},
+    ]
+
+
+def build_proposal_messages_strict(
+    profile: ProfileData,
+    poor_match_names: list[str],
+    previous_response: str,
+) -> list[dict]:
+    """Retry prompt for proposal when the first attempt fails validation."""
+    existing_list = "\n".join(f"- {n}" for n in poor_match_names[:5])
+    user_content = "\n\n".join(
+        [
+            _format_profile(profile),
+            f"## Existing Careers (poor matches)\n{existing_list}",
+            f"## Your Previous (Invalid) Response\n```\n{previous_response[:1000]}\n```",
+            "## Task\nReturn a corrected JSON that matches the schema exactly.",
+        ]
+    )
+    return [
+        {"role": "system", "content": PROPOSAL_SYSTEM_PROMPT_STRICT},
+        {"role": "user", "content": user_content},
+    ]
+
+
+# ---------------------------------------------------------------------------
 # Analyze — single career gap tagging for /api/analyze
 # Used in: services/gap_analyzer.py
 # Temperature: 0.2   Max tokens: 512   Model: groq_model_extraction

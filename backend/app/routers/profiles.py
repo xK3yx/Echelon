@@ -70,6 +70,7 @@ async def get_profile_matches(
         "skills": profile.skills,
         "interests": profile.interests,
         "personality": profile.personality,
+        "education_level": profile.education_level,
     }
     career_data: list[CareerData] = [
         {
@@ -81,6 +82,7 @@ async def get_profile_matches(
             "required_skills": c.required_skills,
             "optional_skills": c.optional_skills,
             "personality_fit": c.personality_fit,
+            "difficulty": c.difficulty,
         }
         for c in careers
     ]

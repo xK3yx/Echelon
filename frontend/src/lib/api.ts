@@ -56,10 +56,10 @@ export const api = {
 
   getCareer: (slug: string) => request<CareerRead>(`/careers/${slug}`),
 
-  createRecommendation: (profileId: string, refresh = false) =>
+  createRecommendation: (profileId: string, refresh = false, allowProposed = true) =>
     request<RecommendationRead>("/recommendations", {
       method: "POST",
-      body: JSON.stringify({ profile_id: profileId, refresh }),
+      body: JSON.stringify({ profile_id: profileId, refresh, allow_proposed: allowProposed }),
     }),
 
   getRecommendation: (id: string) =>

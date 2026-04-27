@@ -12,7 +12,7 @@ const STEPS = [
     number: "02",
     title: "See your matches",
     description:
-      "A deterministic scoring engine ranks 20 curated careers against your profile across skill, personality, and interest dimensions.",
+      "A deterministic scoring engine ranks ~200 O*NET occupations plus curated tech roles against your profile across skill, personality, and interest dimensions.",
   },
   {
     number: "03",
@@ -92,8 +92,8 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-border">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between text-sm text-slate-400">
-          <span>Echelon v2 — portfolio project by xK3yx</span>
+        <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-slate-400">
+          <span>Echelon v2.1 — portfolio project by xK3yx</span>
           <a
             href="https://github.com/xK3yx/Echelon"
             target="_blank"
@@ -102,6 +102,19 @@ export default function HomePage() {
           >
             View source
           </a>
+        </div>
+        <div className="max-w-5xl mx-auto px-6 pb-4 text-xs text-slate-400 leading-relaxed">
+          This product uses data from{" "}
+          <a
+            href="https://www.onetonline.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-slate-600"
+          >
+            O*NET OnLine
+          </a>{" "}
+          by the U.S. Department of Labor, Employment and Training Administration
+          (USDOL/ETA), used under CC BY 4.0. O*NET® is a trademark of USDOL/ETA.
         </div>
       </footer>
     </div>

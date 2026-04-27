@@ -1,8 +1,24 @@
-# Echelon v2
+# Echelon v2.1
 
-AI-assisted career intelligence tool. You describe your skills, personality, and interests; Echelon ranks career paths against your profile using a deterministic rule engine followed by a Groq LLM re-ranker, then generates per-career skill gap analyses and personalised learning roadmaps.
+AI-assisted career intelligence tool. You describe your skills, personality, and interests; Echelon ranks career paths against your profile using a deterministic rule engine followed by a Groq LLM re-ranker, then generates per-career skill gap analyses and personalised learning roadmaps. When no strong match is found, a Stage 2.5 LLM proposal step generates speculative career suggestions from your unique profile.
 
 Built as a final-year diploma portfolio project.
+
+---
+
+## Data sources
+
+The career database is built from three sources, each with a visible badge in the UI:
+
+| Badge | Source | Notes |
+|---|---|---|
+| **O\*NET** | [O\*NET OnLine](https://www.onetonline.org/) — U.S. Department of Labor occupational taxonomy | ~200 knowledge-work occupations, filtered from O\*NET 28.x+. US-centric; international titles may differ. Updated quarterly by USDOL. |
+| **Curated** | Manually-authored entries added via the admin API | Supplement O\*NET with tech-specific or emerging roles. |
+| **Proposed** | LLM-generated when no O\*NET/manual career matches well | Speculative. Displayed with a distinct warning badge. Not promoted to the main catalogue without admin review. |
+
+**O\*NET attribution (CC BY 4.0 — required):**
+> "This product uses data from O\*NET OnLine by the U.S. Department of Labor, Employment
+> and Training Administration (USDOL/ETA). O\*NET® is a trademark of USDOL/ETA."
 
 ---
 
@@ -28,10 +44,15 @@ FastAPI (Python 3.11)
     │
     ├─ Stage 1: Rule scoring (deterministic)
     │    skill × 0.45 + optional × 0.15 + personality × 0.25 + interest × 0.15
-    │    → top 10 candidates
+    │    Education soft penalty: high_school + high-difficulty career → score × 0.7
+    │    Only verified, non-deleted careers are scored  →  top 10 candidates
     │
     ├─ Stage 2: Groq re-rank (llama-3.3-70b-versatile, temp 0.3)
     │    → top 5 with fit reasoning, strengths, risks, confidence
+    │
+    ├─ Stage 2.5: Groq career proposal (only when top score < threshold, ~0.4)
+    │    → 1-2 speculative career suggestions when no strong DB match found
+    │    Proposals persisted as unverified; shown with amber "AI Suggested" badge
     │
     └─ Stage 3: Groq gap + roadmap (llama-3.3-70b-versatile, temp 0.2)
          → skill gaps (easy/medium/hard) + 3-phase learning roadmap per career
@@ -44,7 +65,7 @@ PostgreSQL 15
 
 **Key design decisions:**
 
-- Two Groq calls total per recommendation (re-rank + gap/roadmap batched together), not one per career.
+- Two to three Groq calls per recommendation — re-rank, optional proposal (Stage 2.5), and gap/roadmap batched together. Never one call per career.
 - Results cached by `profile_id` in the `recommendations` table. `refresh=true` bypasses the cache.
 - LLM responses validated with Pydantic v2; on parse failure the call is retried once with a stricter prompt at lower temperature.
 - The rule scorer has zero LLM dependency and is fully unit-tested.
@@ -110,15 +131,31 @@ First build takes ~2 minutes; subsequent starts are instant.
 make migrate
 ```
 
-### 5 — Seed career data
+### 5 — Seed curated career data
 
 ```bash
 make seed
 ```
 
-Loads 20 curated career records. Safe to run multiple times (skips existing slugs).
+Loads 20 hand-curated career records (`source = manual`). Safe to run multiple times.
 
-### 6 — Open the app
+### 6 — (Optional) Ingest O\*NET career data (~200 occupations)
+
+```bash
+# Download O*NET database (free, no account):
+# https://www.onetcenter.org/database.html → "Text" format → extract zip
+
+# Place extracted folder at ./data/onet/ or pass a custom path:
+make ingest-onet ONET_DIR=/path/to/db_29_0_text
+
+# Or use the default path:
+make ingest-onet   # reads from ./data/onet/
+```
+
+See [`backend/scripts/README.md`](backend/scripts/README.md) for full instructions,
+filter rules, and the Work Styles → Big Five mapping heuristic.
+
+### 7 — Open the app
 
 | Service | URL |
 |---|---|
@@ -136,18 +173,21 @@ Loads 20 curated career records. Safe to run multiple times (skips existing slug
 | `GROQ_API_KEY` | Yes | Groq API key. Without it, `/recommendations` returns 502. |
 | `DEBUG` | No | Enables FastAPI debug mode (default `false`) |
 | `NEXT_PUBLIC_API_URL` | Yes (frontend) | Base URL the browser uses to reach the API |
+| `ADMIN_TOKEN` | No | Bearer token for admin endpoints. If unset, all admin routes return 503. |
+| `PROPOSE_THRESHOLD` | No | Rule score threshold below which Stage 2.5 proposal triggers (default `0.4`). |
 
 ---
 
 ## Make targets
 
 ```
-make up       # build images + start stack in background
-make down     # stop and remove containers
-make migrate  # run Alembic migrations to head
-make seed     # seed 20 career records
-make test     # run pytest suite inside backend container
-make lint     # ruff + black --check inside backend container
+make up                          # build images + start stack in background
+make down                        # stop and remove containers
+make migrate                     # run Alembic migrations to head
+make seed                        # seed 20 curated career records
+make ingest-onet [ONET_DIR=...]  # ingest ~200 O*NET occupations (see scripts/README.md)
+make test                        # run pytest suite inside backend container
+make lint                        # ruff + black --check inside backend container
 ```
 
 ---
@@ -159,7 +199,7 @@ POST   /api/profiles                   create profile + anonymous user
 GET    /api/profiles/:id               fetch profile
 GET    /api/profiles/:id/matches       rule-score only (debug endpoint)
 
-GET    /api/careers                    list all 20 careers
+GET    /api/careers                    list verified careers (O*NET + curated)
 GET    /api/careers/:slug              single career
 
 POST   /api/recommendations            run AI pipeline (cached by profile_id)
@@ -176,12 +216,76 @@ All errors follow the shape: `{"error": {"code": "STRING_CODE", "message": "..."
 
 ## Limitations
 
-- **20 careers only.** Paths outside the seeded set will never appear in results.
+- **Career dataset scope.** After ingestion, the DB holds ~220 careers (20 curated + ~200 O\*NET). Paths outside the set will not appear in results.
+- **O\*NET is US-centric.** Occupational titles and skill labels follow US conventions; international equivalents may differ.
+- **O\*NET update cadence.** The dataset is updated quarterly by USDOL. Very new job titles (e.g. recently coined roles) may not appear until the next ingest.
+- **Big Five mapping is a heuristic.** The Work Styles → Big Five derivation is an approximation, not a validated psychometric instrument.
+- **Growth potential defaults to "medium".** Real growth data requires the BLS Employment Projections dataset, which is not yet integrated.
 - **English only.** Skill and interest matching is simple substring/set overlap — no NLP, no synonyms.
 - **No account system.** Closing the browser loses the profile ID. Bookmark your results URL.
 - **Groq rate limits.** The free tier allows ~30 requests/min. Heavy testing may trigger 429 errors.
 - **LLM hallucination.** Roadmap skills and project ideas are generated text. Verify them independently.
-- **Personality model is illustrative.** The Big Five sliders feed a heuristic formula; they are not a validated psychometric instrument.
+- **LLM-proposed careers are speculative.** They are displayed with a clear warning badge and should not be the basis for major decisions without further research.
+
+---
+
+## Admin operations
+
+Admin endpoints live at `/api/admin/careers` and require a Bearer token matching `ADMIN_TOKEN` in `.env`.
+
+### Setup
+
+```bash
+# Generate a token (Linux/Mac):
+openssl rand -hex 32
+
+# Add to .env:
+ADMIN_TOKEN=<your-generated-token>
+```
+
+If `ADMIN_TOKEN` is empty or unset, all admin endpoints return `503 — admin features disabled`.
+
+### Ingest O*NET (after downloading data)
+
+```bash
+make ingest-onet ONET_DIR=/path/to/db_29_0_text
+```
+
+### Review and promote LLM-proposed careers
+
+```bash
+# List careers awaiting review
+curl -H "Authorization: Bearer $ADMIN_TOKEN" http://localhost:8000/api/admin/careers/proposed
+
+# Promote a proposal to verified (source becomes 'manual', appears in public list)
+curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" \
+  http://localhost:8000/api/admin/careers/<career_id>/verify
+
+# Soft-delete a career (removes from public list; row is kept with deleted_at set)
+curl -X DELETE -H "Authorization: Bearer $ADMIN_TOKEN" \
+  http://localhost:8000/api/admin/careers/<career_id>
+```
+
+### Manually add a career
+
+```bash
+curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Prompt Engineer",
+    "slug": "prompt-engineer",
+    "description": "Design, test, and refine prompts for large language models.",
+    "required_skills": ["Prompt Design", "Python", "LLM APIs", "Critical Thinking"],
+    "optional_skills": ["Fine-tuning", "Evaluation Frameworks"],
+    "personality_fit": {"openness":80,"conscientiousness":70,"extraversion":45,"agreeableness":60,"neuroticism":35},
+    "difficulty": "medium",
+    "growth_potential": "high",
+    "category": "Computer & Mathematical"
+  }' \
+  http://localhost:8000/api/admin/careers
+```
+
+**Security note:** `ADMIN_TOKEN` is a single shared secret — not a multi-user auth system. Rotate it if exposed. Never commit it to source control.
 
 ---
 

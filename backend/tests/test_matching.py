@@ -8,9 +8,11 @@ The scoring functions are deterministic: same inputs always produce same outputs
 import pytest
 
 from app.services.matching import (
+    EDUCATION_PENALTY_FACTOR,
     CareerData,
     ProfileData,
     ScoredCareer,
+    apply_education_penalty,
     compute_interest_score,
     compute_optional_score,
     compute_personality_score,
@@ -41,6 +43,7 @@ def _career(**overrides) -> CareerData:
         "required_skills": ["Python", "SQL", "Git"],
         "optional_skills": ["Docker", "Kubernetes"],
         "personality_fit": NEUTRAL_PERSONALITY.copy(),
+        "difficulty": "medium",
     }
     base.update(overrides)  # type: ignore[typeddict-item]
     return base
@@ -51,6 +54,7 @@ def _profile(**overrides) -> ProfileData:
         "skills": [],
         "interests": [],
         "personality": NEUTRAL_PERSONALITY.copy(),
+        "education_level": "bachelors",
     }
     base.update(overrides)  # type: ignore[typeddict-item]
     return base
@@ -300,3 +304,53 @@ class TestRankCareers:
         career = _career()
         result = rank_careers(_profile(skills=["Python"]), [career, career])
         assert len(result) == 2
+
+
+# ---------------------------------------------------------------------------
+# apply_education_penalty
+# ---------------------------------------------------------------------------
+
+
+class TestApplyEducationPenalty:
+    def test_no_penalty_for_bachelors_and_high_difficulty(self):
+        result = apply_education_penalty(0.8, "bachelors", "high")
+        assert result == pytest.approx(0.8)
+
+    def test_penalty_applied_for_high_school_and_high_difficulty(self):
+        result = apply_education_penalty(0.8, "high_school", "high")
+        assert result == pytest.approx(0.8 * EDUCATION_PENALTY_FACTOR)
+
+    def test_no_penalty_for_high_school_and_medium_difficulty(self):
+        result = apply_education_penalty(0.8, "high_school", "medium")
+        assert result == pytest.approx(0.8)
+
+    def test_no_penalty_for_high_school_and_low_difficulty(self):
+        result = apply_education_penalty(0.8, "high_school", "low")
+        assert result == pytest.approx(0.8)
+
+    def test_no_penalty_for_empty_education_level(self):
+        result = apply_education_penalty(0.8, "", "high")
+        assert result == pytest.approx(0.8)
+
+    def test_penalty_factor_value(self):
+        assert EDUCATION_PENALTY_FACTOR == pytest.approx(0.7)
+
+    def test_rank_careers_applies_education_penalty(self):
+        high_career = _career(
+            id="high-1", slug="high-career", name="High Career", difficulty="high"
+        )
+        profile_hs = _profile(skills=["Python", "SQL", "Git"], education_level="high_school")
+        profile_ba = _profile(skills=["Python", "SQL", "Git"], education_level="bachelors")
+
+        result_hs = rank_careers(profile_hs, [high_career])
+        result_ba = rank_careers(profile_ba, [high_career])
+
+        assert result_hs[0].total_score == pytest.approx(
+            result_ba[0].total_score * EDUCATION_PENALTY_FACTOR, abs=1e-5
+        )
+
+    def test_penalty_does_not_filter_career_out(self):
+        high_career = _career(difficulty="high")
+        profile_hs = _profile(education_level="high_school")
+        result = rank_careers(profile_hs, [high_career])
+        assert len(result) == 1

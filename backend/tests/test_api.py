@@ -43,6 +43,8 @@ def _career_fixture(suffix: str) -> Career:
         difficulty="medium",
         growth_potential="high",
         category="Software Engineering",
+        source="manual",
+        verified=True,
     )
 
 
@@ -56,7 +58,7 @@ async def test_health(client: AsyncClient):
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ok"
-    assert body["version"] == "2.0.0"
+    assert body["version"] == "2.1.0"
 
 
 # ---------------------------------------------------------------------------
@@ -148,6 +150,10 @@ async def test_get_career_by_slug(client: AsyncClient, db: AsyncSession):
     assert body["difficulty"] == "medium"
     assert body["growth_potential"] == "high"
     assert isinstance(body["required_skills"], list)
+    assert body["source"] == "manual"
+    assert body["verified"] is True
+    assert body["onet_soc_code"] is None
+    assert body["external_url"] is None
 
     await db.delete(career)
     await db.commit()

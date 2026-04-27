@@ -60,10 +60,14 @@ export interface RuleScores {
   interest: number;
 }
 
+export type CareerSource = "onet" | "manual" | "llm_proposed";
+
 export interface RankedCareer {
   slug: string;
   name: string;
   category: string;
+  source: CareerSource;
+  external_url?: string | null;
   fit_reasoning: string;
   strengths: string[];
   risks: string[];
@@ -73,8 +77,20 @@ export interface RankedCareer {
   roadmap: RoadmapPhase[];
 }
 
+export interface ProposedCareer {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  description: string;
+  source: "llm_proposed";
+  verified: false;
+  rationale: string;
+}
+
 export interface RecommendationResult {
   ranked_careers: RankedCareer[];
+  proposed_careers: ProposedCareer[];
 }
 
 export interface RecommendationRead {

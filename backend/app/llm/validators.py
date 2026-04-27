@@ -58,6 +58,29 @@ class GapRoadmapOutput(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Proposal (Stage 2.5 — triggered only when top rule score < threshold)
+# ---------------------------------------------------------------------------
+
+
+class ProposedCareerItem(BaseModel):
+    name: str = Field(min_length=3)
+    description: str = Field(min_length=50)
+    category: str = Field(min_length=2)
+    required_skills: list[str] = Field(min_length=5, max_length=8)
+    optional_skills: list[str] = Field(max_length=5)
+    personality_fit: dict  # Big Five {openness, conscientiousness, ...} 0-100
+    difficulty: Literal["low", "medium", "high"]
+    growth_potential: Literal["low", "medium", "high"]
+    rationale: str = Field(min_length=20)
+
+
+class ProposalOutput(BaseModel):
+    """1–2 LLM-proposed careers for low-fit profiles."""
+
+    proposed_careers: list[ProposedCareerItem] = Field(min_length=1, max_length=2)
+
+
+# ---------------------------------------------------------------------------
 # Analyze (single career, /api/analyze — gap tagging only, no roadmap)
 # ---------------------------------------------------------------------------
 
