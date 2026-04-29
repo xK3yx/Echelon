@@ -34,6 +34,57 @@
     "category": "Software Engineering"
   },
   {
+    "name": "Full-stack Developer",
+    "slug": "full-stack-developer",
+    "description": "Build both the client-side and server-side of web applications end-to-end. Full-stack developers move between frontend, backend, and database layers, owning features from UI to data persistence.",
+    "required_skills": ["HTML", "CSS", "JavaScript", "Python", "SQL", "Git", "REST APIs"],
+    "optional_skills": ["React", "TypeScript", "Node.js", "Docker", "Cloud Platforms", "Testing", "GraphQL", "PostgreSQL"],
+    "personality_fit": {
+      "openness": 70,
+      "conscientiousness": 70,
+      "extraversion": 45,
+      "agreeableness": 60,
+      "neuroticism": 35
+    },
+    "difficulty": "medium",
+    "growth_potential": "high",
+    "category": "Software Engineering"
+  },
+  {
+    "name": "Software Developer",
+    "slug": "software-developer",
+    "description": "Build software systems across web, desktop, and backend services. Generalists who pick up new languages and stacks as needed; common entry point for graduates with broad programming skills.",
+    "required_skills": ["Python", "Java", "Git", "Algorithms", "Data Structures", "Object-Oriented Programming"],
+    "optional_skills": ["JavaScript", "C++", "SQL", "REST APIs", "Linux", "Testing", "Debugging"],
+    "personality_fit": {
+      "openness": 65,
+      "conscientiousness": 75,
+      "extraversion": 40,
+      "agreeableness": 55,
+      "neuroticism": 30
+    },
+    "difficulty": "medium",
+    "growth_potential": "high",
+    "category": "Software Engineering"
+  },
+  {
+    "name": "Web Developer",
+    "slug": "web-developer",
+    "description": "Build websites and web applications using core web technologies. Less framework-specific than a Frontend Developer role; common entry point combining markup, styling, scripting, and basic backend.",
+    "required_skills": ["HTML", "CSS", "JavaScript", "Git", "Responsive Design", "Web Performance"],
+    "optional_skills": ["PHP", "Python", "WordPress", "MySQL", "jQuery", "SEO", "Bootstrap"],
+    "personality_fit": {
+      "openness": 65,
+      "conscientiousness": 65,
+      "extraversion": 45,
+      "agreeableness": 60,
+      "neuroticism": 35
+    },
+    "difficulty": "low",
+    "growth_potential": "medium",
+    "category": "Software Engineering"
+  },
+  {
     "name": "Mobile Developer",
     "slug": "mobile-developer",
     "description": "Build native or cross-platform mobile applications for iOS and Android. Mobile developers focus on performance, offline support, device APIs, and publishing to app stores.",
