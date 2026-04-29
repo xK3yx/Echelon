@@ -3,8 +3,12 @@ Text extraction from PDF, DOCX, and plain-text resume files.
 
 Extraction order for PDFs:
   1. pypdf (fast, works for text-based PDFs)
-  2. pdfplumber (slower but more layout-aware; used as fallback)
-  3. Raise ValueError("scanned_pdf") if both yield < 100 characters
+  2. pdfplumber fallback when pypdf either:
+       - returns < 100 characters, OR
+       - returns "garbled" output where most words are 1-2 chars long
+         (graphically-designed PDFs with letter-spacing/kerning often
+         produce "P R O G R A M M I N G"-style output via pypdf).
+  3. Raise ValueError("scanned_pdf") if pdfplumber also fails.
 
 Raises:
   ValueError("scanned_pdf")     — PDF appears to be scanned / image-only
@@ -15,6 +19,12 @@ from __future__ import annotations
 import io
 
 _MIN_TEXT_LENGTH = 100
+
+# Garbled-text detection: if more than this fraction of "words" are 1 char
+# long, assume pypdf split each character into its own token (a known
+# failure mode for kerned / letter-spaced PDFs) and fall back to pdfplumber.
+_GARBLED_SHORT_WORD_THRESHOLD = 0.30
+_GARBLED_MIN_WORDS = 50  # only judge once we have enough words to be sure
 
 
 def extract_text(file_bytes: bytes, mime_type: str) -> str:
@@ -34,14 +44,32 @@ def extract_text(file_bytes: bytes, mime_type: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _looks_garbled(text: str) -> bool:
+    """
+    Detect pypdf's character-separation failure mode.
+
+    Healthy resume text averages ~5 chars per "word" with very few
+    single-character tokens.  Garbled extractions ("P R O G R A M M I N G")
+    have most tokens as single characters.
+    """
+    words = text.split()
+    if len(words) < _GARBLED_MIN_WORDS:
+        return False
+    single_char = sum(1 for w in words if len(w) == 1)
+    return (single_char / len(words)) > _GARBLED_SHORT_WORD_THRESHOLD
+
+
 def _extract_pdf(file_bytes: bytes) -> str:
     import pypdf
 
     reader = pypdf.PdfReader(io.BytesIO(file_bytes))
     text = "\n".join(page.extract_text() or "" for page in reader.pages).strip()
 
-    if len(text) < _MIN_TEXT_LENGTH:
-        # Fallback: pdfplumber handles more complex layouts
+    needs_fallback = len(text) < _MIN_TEXT_LENGTH or _looks_garbled(text)
+
+    if needs_fallback:
+        # Fallback: pdfplumber handles complex layouts and kerned glyphs
+        # much more reliably than pypdf at the cost of some speed.
         import pdfplumber
 
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:

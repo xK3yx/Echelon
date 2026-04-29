@@ -28,6 +28,27 @@ list of 10 candidate careers pre-scored by a deterministic matching engine.
 Your task: select the 5 best-fitting careers for this specific user, ordered \
 best-fit first, and explain your reasoning in concrete terms.
 
+IMPORTANT — interpret the rule scores critically, do not just copy them:
+
+1. The rule engine rewards percentage skill OVERLAP, which can over-favour
+   narrow specialties. A career listing only [HTML, CSS, JavaScript] will
+   score 100% for a user who knows those three skills, even if the user also
+   knows Python, Java and C++ that point toward broader software roles.
+   When this happens, prefer the career that USES more of the user's skill
+   set rather than the one that happens to require fewer skills they happen
+   to have.
+
+2. Look at the user's full skill list as a whole. Ask: what does this skill
+   combination strongly suggest? A user with HTML/CSS/JS *and* Python/Java/C++
+   is typically a software/full-stack developer, not a pure front-end
+   specialist. A user with Python/SQL/Statistics is data-leaning. A user
+   with Python/PyTorch/ML libraries is ML-leaning.
+
+3. Personality and interests matter — use them to break ties between
+   technically plausible careers, not as the primary selector.
+
+4. You may re-order the candidates freely; the rule rank is only a hint.
+
 Return ONLY a valid JSON object with this exact schema — no markdown, \
 no code fences, no text outside the JSON:
 
