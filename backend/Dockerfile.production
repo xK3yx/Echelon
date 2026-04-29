@@ -1,0 +1,68 @@
+# ── Stage 1: build dependencies ───────────────────────────────────────────────
+FROM python:3.11-slim AS builder
+
+WORKDIR /app
+
+# WeasyPrint C libraries + libmagic for MIME detection
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libmagic1 \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libffi-dev \
+    shared-mime-info \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml .
+
+# Install only runtime deps (no dev extras)
+RUN pip install --no-cache-dir \
+    "fastapi>=0.111.0" \
+    "uvicorn[standard]>=0.29.0" \
+    "sqlalchemy[asyncio]>=2.0.0" \
+    "alembic>=1.13.0" \
+    "asyncpg>=0.29.0" \
+    "pydantic>=2.7.0" \
+    "pydantic-settings>=2.2.0" \
+    "httpx>=0.27.0" \
+    "python-dotenv>=1.0.0" \
+    "python-multipart>=0.0.9" \
+    "pypdf>=4.3.0" \
+    "pdfplumber>=0.11.0" \
+    "python-docx>=1.1.0" \
+    "python-magic>=0.4.27" \
+    "slowapi>=0.1.9" \
+    "weasyprint>=62.0" \
+    "jinja2>=3.1.0"
+
+# ── Stage 2: production image ──────────────────────────────────────────────────
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Runtime system libraries (no build tools)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libmagic1 \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libffi8 \
+    shared-mime-info \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed Python packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+COPY . .
+
+# Run migrations then start the server.
+# PORT env var is injected by Railway/Render; default to 8000.
+CMD alembic upgrade head && \
+    uvicorn app.main:app \
+      --host 0.0.0.0 \
+      --port "${PORT:-8000}" \
+      --workers 2 \
+      --no-access-log

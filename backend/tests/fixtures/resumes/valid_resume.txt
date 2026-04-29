@@ -1,0 +1,44 @@
+JANE SMITH
+jane.smith@email.example | (555) 123-4567
+San Francisco, CA | linkedin.com/in/janesmith-example
+
+PROFESSIONAL SUMMARY
+Results-driven software engineer with 5 years of professional experience building scalable
+backend systems and REST APIs. Proven track record of delivering high-quality software in
+fast-paced startup environments. Passionate about clean architecture and developer tooling.
+
+PROFESSIONAL EXPERIENCE
+
+Senior Software Engineer | TechCorp Inc. | 2021 – Present
+• Architected Python microservices handling 10 million daily requests with 99.9% uptime
+• Led migration from monolithic to distributed architecture, reducing API latency by 40%
+• Mentored 3 junior engineers and established team coding standards and review processes
+• Designed and implemented CI/CD pipelines using GitHub Actions and Docker
+
+Software Engineer | DataFlow Systems | 2019 – 2021
+• Developed real-time data processing pipelines using Apache Kafka and Python
+• Built REST APIs consumed by over 50 internal teams across the organization
+• Improved critical database query performance by 35% through indexing and optimization
+• Collaborated with product managers to translate requirements into technical specifications
+
+Junior Developer | WebAgency Co. | 2018 – 2019
+• Created responsive web applications using React and TypeScript for various clients
+• Implemented UI components based on Figma design specifications
+• Participated in agile ceremonies and contributed to sprint planning and retrospectives
+
+EDUCATION
+
+Bachelor of Science in Computer Science
+University of California, Berkeley | Graduated 2018
+GPA: 3.8 / 4.0
+Relevant Coursework: Algorithms, Distributed Systems, Machine Learning, Database Design
+
+TECHNICAL SKILLS
+Programming Languages: Python, JavaScript, TypeScript, SQL, Go, Bash
+Frameworks & Libraries: FastAPI, Django, React, Node.js, SQLAlchemy, Pandas
+Tools & Platforms: Docker, Kubernetes, Git, PostgreSQL, Redis, AWS, GCP
+Competencies: System Design, API Development, Database Optimization, Code Review
+
+PROFESSIONAL INTERESTS
+Backend Development, Distributed Systems, Cloud Computing, Open Source Software,
+Machine Learning Applications, Developer Tooling, Platform Engineering

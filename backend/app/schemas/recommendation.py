@@ -15,6 +15,19 @@ class RecommendationRead(BaseModel):
     profile_id: UUID
     result: dict
     model_used: str
+    is_public: bool = False
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    # protected_namespaces=() silences the Pydantic v2 warning about
+    # `model_used` colliding with the reserved "model_" namespace.
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
+
+
+class RecommendationPublic(BaseModel):
+    """Slimmed-down read schema for public share pages — omits profile_id."""
+    id: UUID
+    result: dict
+    model_used: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())

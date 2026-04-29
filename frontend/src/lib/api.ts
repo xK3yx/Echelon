@@ -1,9 +1,12 @@
 import type {
   AnalyzeResponse,
   CareerRead,
+  CourseRecommendResponse,
   ProfileCreate,
   ProfileRead,
+  RecommendationPublic,
   RecommendationRead,
+  ResumeParseResponse,
 } from "@/lib/types";
 
 const API_BASE =
@@ -70,4 +73,36 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ profile_id: profileId, career_slug: careerSlug }),
     }),
+
+  shareRecommendation: (id: string) =>
+    request<RecommendationRead>(`/recommendations/${id}/share`, { method: "POST" }),
+
+  getPublicRecommendation: (id: string) =>
+    request<RecommendationPublic>(`/recommendations/${id}/public`),
+
+  getCourses: (careerSlug: string, careerName: string, gapSkills: string[]) =>
+    request<CourseRecommendResponse>(
+      `/courses/recommend?career_slug=${encodeURIComponent(careerSlug)}&career_name=${encodeURIComponent(careerName)}&skills=${encodeURIComponent(gapSkills.join(","))}`,
+    ),
+
+  /** Multipart upload — does not go through the JSON `request` helper. */
+  parseResume: async (file: File): Promise<ResumeParseResponse> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE}/resume/parse`, {
+      method: "POST",
+      body: form,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({})) as {
+        error?: { code?: string; message?: string };
+      };
+      throw new ApiError(
+        res.status,
+        body.error?.code ?? "UNKNOWN_ERROR",
+        body.error?.message ?? `HTTP ${res.status}`,
+      );
+    }
+    return res.json() as Promise<ResumeParseResponse>;
+  },
 };

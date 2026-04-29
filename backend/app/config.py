@@ -13,6 +13,15 @@ class Settings(BaseSettings):
     # Stage 2.5: if the top rule-based score falls below this threshold, the
     # LLM proposer is triggered (when allow_proposed=True in the request).
     propose_threshold: float = 0.4
+    # Resume upload (Phase 3)
+    max_upload_size_mb: float = 5.0
+    resume_confidence_threshold: float = 0.4
+    # Course recommendations (Phase 5) — optional; features degrade gracefully if unset
+    youtube_api_key: str = ""
+    tavily_api_key: str = ""
+    course_cache_ttl_days: int = 7
+    # Deployment (Phase 11) — production frontend URL, added to CORS allow-list
+    public_base_url: str = ""  # e.g. https://echelon.vercel.app
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

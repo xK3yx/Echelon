@@ -98,6 +98,14 @@ export interface RecommendationRead {
   profile_id: string;
   result: RecommendationResult;
   model_used: string;
+  is_public: boolean;
+  created_at: string;
+}
+
+export interface RecommendationPublic {
+  id: string;
+  result: RecommendationResult;
+  model_used: string;
   created_at: string;
 }
 
@@ -106,4 +114,42 @@ export interface AnalyzeResponse {
   career_slug: string;
   career_name: string;
   skill_gaps: SkillGap[];
+}
+
+// ── Resume parsing ─────────────────────────────────────────────────────────
+
+export interface ExtractedProfile {
+  name: string | null;
+  email: string | null;
+  skills: string[];
+  education_level: EducationLevel | null;
+  interests: string[];
+  years_experience: number | null;
+  summary: string | null;
+}
+
+export interface ResumeParseResponse {
+  extracted: ExtractedProfile;
+  confidence: number;
+  warnings: string[];
+}
+
+// ── Course recommendations ─────────────────────────────────────────────────
+
+export type CourseProvider = "youtube" | "tavily";
+
+export interface Course {
+  title: string;
+  url: string;
+  provider: CourseProvider;
+  thumbnail: string | null;
+  channel: string;
+  description: string;
+  relevance_score: number;
+  rationale: string;
+}
+
+export interface CourseRecommendResponse {
+  courses: Course[];
+  source_note: string;
 }

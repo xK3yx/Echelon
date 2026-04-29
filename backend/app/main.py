@@ -2,18 +2,30 @@ from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
-from app.routers import admin, analyze, careers, health, profiles, recommendations
+from app.config import settings
+from app.limiter import limiter
+from app.routers import admin, analyze, careers, courses, export, health, profiles, recommendations, resume
 
 app = FastAPI(
-    title="Echelon v2.1",
+    title="Echelon v2.2",
     description="AI-assisted career intelligence API",
-    version="2.1.0",
+    version="2.2.0",
 )
+
+# Rate-limiter state (used by @limiter.limit() decorators in routers)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+_cors_origins = ["http://localhost:3000"]
+if settings.public_base_url:
+    _cors_origins.append(settings.public_base_url.rstrip("/"))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,6 +42,13 @@ _HTTP_CODE_MAP: dict[int, str] = {
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc: HTTPException) -> JSONResponse:
+    # Some routers (e.g. resume) raise HTTPException with a pre-structured dict
+    # containing "code" already set — pass it through verbatim.
+    if isinstance(exc.detail, dict) and "code" in exc.detail:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": exc.detail},
+        )
     code = _HTTP_CODE_MAP.get(exc.status_code, "HTTP_ERROR")
     return JSONResponse(
         status_code=exc.status_code,
@@ -72,3 +91,6 @@ app.include_router(careers.router, prefix="/api")
 app.include_router(recommendations.router, prefix="/api")
 app.include_router(analyze.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(resume.router, prefix="/api")
+app.include_router(courses.router, prefix="/api")
+app.include_router(export.router, prefix="/api")

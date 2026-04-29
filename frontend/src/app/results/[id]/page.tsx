@@ -12,6 +12,12 @@ import {
   ExternalLink,
   Sparkles,
   Info,
+  BookOpen,
+  Youtube,
+  Globe,
+  Share2,
+  Check,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -19,6 +25,8 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type {
   CareerSource,
+  Course,
+  CourseProvider,
   ProposedCareer,
   RankedCareer,
   RoadmapPhase,
@@ -28,6 +36,7 @@ import type {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Accordion,
   AccordionContent,
@@ -44,9 +53,10 @@ const SOURCE_LABEL: Record<CareerSource, string> = {
 };
 
 const SOURCE_STYLES: Record<CareerSource, string> = {
-  onet: "bg-blue-50 text-blue-600 border-blue-200",
-  manual: "bg-slate-50 text-slate-500 border-slate-200",
-  llm_proposed: "bg-amber-50 text-amber-600 border-amber-200",
+  onet: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800",
+  manual: "bg-muted text-muted-foreground border-border",
+  llm_proposed:
+    "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800",
 };
 
 function SourceBadge({ source }: { source: CareerSource }) {
@@ -76,27 +86,29 @@ function ConfidenceRing({ value, size = 52 }: { value: number; size?: number }) 
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} className="rotate-[-90deg]">
+        {/* Track — uses CSS var so it responds to dark mode */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="var(--ring-track)"
           strokeWidth="4"
         />
+        {/* Fill — indigo primary */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="hsl(243 75% 59%)"
+          stroke="hsl(var(--primary))"
           strokeWidth="4"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
         />
       </svg>
-      <span className="absolute text-xs font-bold text-slate-700 tabular-nums">
+      <span className="absolute text-xs font-bold text-foreground tabular-nums">
         {pct}%
       </span>
     </div>
@@ -106,9 +118,9 @@ function ConfidenceRing({ value, size = 52 }: { value: number; size?: number }) 
 // ── Rank badge ────────────────────────────────────────────────────────────────
 
 const RANK_STYLES: Record<number, string> = {
-  1: "bg-amber-100 text-amber-700 border-amber-300",
-  2: "bg-slate-100 text-slate-600 border-slate-300",
-  3: "bg-orange-50 text-orange-600 border-orange-200",
+  1: "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900 dark:text-amber-300 dark:border-amber-700",
+  2: "bg-muted text-muted-foreground border-border",
+  3: "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-800",
 };
 
 function RankBadge({ rank }: { rank: number }) {
@@ -116,7 +128,7 @@ function RankBadge({ rank }: { rank: number }) {
     <span
       className={cn(
         "inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold border shrink-0",
-        RANK_STYLES[rank] ?? "bg-slate-50 text-slate-500 border-slate-200",
+        RANK_STYLES[rank] ?? "bg-muted/50 text-muted-foreground border-border",
       )}
     >
       {rank}
@@ -126,41 +138,57 @@ function RankBadge({ rank }: { rank: number }) {
 
 // ── Score breakdown ───────────────────────────────────────────────────────────
 
-function ScoreBreakdown({ scores }: { scores: RuleScores }) {
+function ScoreBreakdown({ scores, confidence }: { scores: RuleScores; confidence: number }) {
   const items = [
-    {
-      label: "Skill fit",
-      pct: Math.round((scores.skill / 0.45) * 100),
-      color: "bg-indigo-500",
-    },
-    {
-      label: "Personality",
-      pct: Math.round((scores.personality / 0.25) * 100),
-      color: "bg-violet-500",
-    },
-    {
-      label: "Interests",
-      pct: Math.round((scores.interest / 0.15) * 100),
-      color: "bg-emerald-500",
-    },
+    { label: "Skill fit",     pct: Math.round((scores.skill        / 0.45) * 100), color: "bg-indigo-500",  weight: "45%" },
+    { label: "Opt. skills",   pct: Math.round((scores.optional     / 0.15) * 100), color: "bg-blue-400",    weight: "15%" },
+    { label: "Personality",   pct: Math.round((scores.personality  / 0.25) * 100), color: "bg-violet-500",  weight: "25%" },
+    { label: "Interests",     pct: Math.round((scores.interest     / 0.15) * 100), color: "bg-emerald-500", weight: "15%" },
   ];
+  const totalPct = Math.round(scores.total * 100);
 
   return (
-    <div className="space-y-2">
-      {items.map((item) => (
-        <div key={item.label} className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 w-20 shrink-0">{item.label}</span>
-          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className={cn("h-full rounded-full transition-all", item.color)}
-              style={{ width: `${Math.min(100, item.pct)}%` }}
-            />
+    <div className="space-y-3">
+      <div className="space-y-2">
+        {items.map((item) => (
+          <div key={item.label} className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground w-20 shrink-0">{item.label}</span>
+            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className={cn("h-full rounded-full transition-all", item.color)}
+                style={{ width: `${Math.min(100, item.pct)}%` }}
+              />
+            </div>
+            <span className="text-xs font-medium text-muted-foreground w-8 text-right tabular-nums">
+              {Math.min(100, item.pct)}%
+            </span>
           </div>
-          <span className="text-xs font-medium text-slate-600 w-8 text-right tabular-nums">
-            {Math.min(100, item.pct)}%
+        ))}
+      </div>
+
+      {/* Summary row */}
+      <div className="flex items-center justify-between pt-2 border-t border-border">
+        <span className="text-xs text-muted-foreground">
+          Rule score{" "}
+          <span
+            className="cursor-help underline decoration-dotted"
+            title="Weighted sum: skill×0.45 + optional×0.15 + personality×0.25 + interests×0.15"
+          >
+            {totalPct}%
           </span>
-        </div>
-      ))}
+          {" · "}
+          AI confidence{" "}
+          <span
+            className="cursor-help underline decoration-dotted"
+            title="LLM re-ranking score — how strongly the model believes this career fits your profile. Independent of the rule score."
+          >
+            {Math.round(confidence)}%
+          </span>
+        </span>
+        <span className="text-[10px] text-muted-foreground/60 italic">
+          scores are approximations
+        </span>
+      </div>
     </div>
   );
 }
@@ -168,9 +196,12 @@ function ScoreBreakdown({ scores }: { scores: RuleScores }) {
 // ── Roadmap phase block ───────────────────────────────────────────────────────
 
 const PHASE_STYLES: Record<string, string> = {
-  Beginner: "border-emerald-300 bg-emerald-50",
-  Intermediate: "border-amber-300 bg-amber-50",
-  Advanced: "border-indigo-300 bg-indigo-50",
+  Beginner:
+    "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950",
+  Intermediate:
+    "border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950",
+  Advanced:
+    "border-indigo-300 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-950",
 };
 
 function RoadmapBlock({ phase }: { phase: RoadmapPhase }) {
@@ -178,23 +209,23 @@ function RoadmapBlock({ phase }: { phase: RoadmapPhase }) {
     <div
       className={cn(
         "rounded-lg border-2 p-4",
-        PHASE_STYLES[phase.phase] ?? "border-slate-200 bg-slate-50",
+        PHASE_STYLES[phase.phase] ?? "border-border bg-muted",
       )}
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-semibold text-slate-800">{phase.phase}</span>
-        <span className="text-xs text-slate-500">{phase.duration_weeks}w</span>
+        <span className="text-sm font-semibold text-foreground">{phase.phase}</span>
+        <span className="text-xs text-muted-foreground">{phase.duration_weeks}w</span>
       </div>
       <div className="space-y-2.5">
         <div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-1">
             Skills
           </p>
           <div className="flex flex-wrap gap-1">
             {phase.skills.map((s) => (
               <span
                 key={s}
-                className="px-2 py-0.5 text-xs rounded-full bg-white border border-slate-200 text-slate-600"
+                className="px-2 py-0.5 text-xs rounded-full bg-card border border-border text-muted-foreground user-content"
               >
                 {s}
               </span>
@@ -202,19 +233,151 @@ function RoadmapBlock({ phase }: { phase: RoadmapPhase }) {
           </div>
         </div>
         <div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-1">
             Projects
           </p>
           <ul className="space-y-1">
             {phase.projects.map((p) => (
-              <li key={p} className="flex gap-1.5 text-xs text-slate-600">
-                <span className="text-slate-400 shrink-0 mt-0.5">→</span>
-                {p}
+              <li key={p} className="flex gap-1.5 text-xs text-muted-foreground">
+                <span className="text-muted-foreground/50 shrink-0 mt-0.5">→</span>
+                <span className="user-content min-w-0">{p}</span>
               </li>
             ))}
           </ul>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Course card ───────────────────────────────────────────────────────────────
+
+const PROVIDER_ICON: Record<CourseProvider, React.ReactNode> = {
+  youtube: <Youtube className="h-3 w-3" />,
+  tavily: <Globe className="h-3 w-3" />,
+};
+
+const PROVIDER_LABEL: Record<CourseProvider, string> = {
+  youtube: "YouTube",
+  tavily: "Web",
+};
+
+const PROVIDER_STYLES: Record<CourseProvider, string> = {
+  youtube: "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950 dark:text-rose-400 dark:border-rose-800",
+  tavily: "bg-sky-50 text-sky-600 border-sky-200 dark:bg-sky-950 dark:text-sky-400 dark:border-sky-800",
+};
+
+function CourseCard({ course }: { course: Course }) {
+  return (
+    <a
+      href={course.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/30 transition-colors"
+    >
+      {course.thumbnail ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={course.thumbnail}
+          alt=""
+          className="w-20 h-14 object-cover rounded-lg shrink-0 bg-muted"
+        />
+      ) : (
+        <div className="w-20 h-14 rounded-lg bg-muted shrink-0 flex items-center justify-center">
+          <BookOpen className="h-5 w-5 text-muted-foreground/50" />
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-sm font-medium text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+            {course.title}
+          </p>
+          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+        </div>
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border",
+              PROVIDER_STYLES[course.provider],
+            )}
+          >
+            {PROVIDER_ICON[course.provider]}
+            {PROVIDER_LABEL[course.provider]}
+          </span>
+          <span className="text-xs text-muted-foreground truncate">{course.channel}</span>
+          <span className="text-xs text-muted-foreground ml-auto tabular-nums shrink-0">
+            {Math.round(course.relevance_score * 100)}% match
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{course.rationale}</p>
+      </div>
+    </a>
+  );
+}
+
+// ── Bridge the gap section (lazy-loaded inside accordion) ─────────────────────
+
+function BridgeTheGap({
+  careerSlug,
+  careerName,
+  gapSkills,
+}: {
+  careerSlug: string;
+  careerName: string;
+  gapSkills: string[];
+}) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["courses", careerSlug],
+    queryFn: () => api.getCourses(careerSlug, careerName, gapSkills),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const courses = data?.courses ?? [];
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide">
+          Bridge the gap
+        </p>
+        {data && (
+          <span
+            className="text-[10px] text-muted-foreground cursor-help"
+            title={data.source_note}
+          >
+            <Info className="h-3 w-3 inline mr-0.5" />
+            About these courses
+          </span>
+        )}
+      </div>
+
+      {isLoading && (
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {isError && (
+        <p className="text-xs text-muted-foreground italic">
+          Couldn&apos;t load course recommendations right now.
+        </p>
+      )}
+
+      {!isLoading && !isError && courses.length === 0 && (
+        <p className="text-xs text-muted-foreground italic">
+          No course recommendations available — add a YouTube or Tavily API key to enable this feature.
+        </p>
+      )}
+
+      {courses.length > 0 && (
+        <div className="space-y-2">
+          {courses.map((course) => (
+            <CourseCard key={course.url} course={course} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -230,15 +393,20 @@ function CareerCard({
   rank: number;
   defaultOpen?: boolean;
 }) {
+  const [accordionValue, setAccordionValue] = React.useState<string>(
+    defaultOpen ? "details" : "",
+  );
+  const isOpen = accordionValue === "details";
+
   return (
     <div
       className={cn(
-        "bg-white rounded-2xl border shadow-sm overflow-hidden",
-        rank === 1 ? "border-primary/40" : "border-slate-200",
+        "bg-card rounded-2xl border shadow-sm overflow-hidden",
+        rank === 1 ? "border-primary/40" : "border-border",
       )}
     >
       {rank === 1 && (
-        <div className="bg-primary/5 border-b border-primary/20 px-5 py-2">
+        <div className="bg-primary/10 border-b border-primary/20 px-5 py-2">
           <span className="text-xs font-semibold text-primary tracking-widest">
             BEST MATCH
           </span>
@@ -254,7 +422,7 @@ function CareerCard({
               <div className="flex items-center gap-2 flex-wrap">
                 <h2
                   className={cn(
-                    "font-bold text-slate-900 leading-tight",
+                    "font-bold text-foreground leading-tight break-words min-w-0",
                     rank === 1 ? "text-xl" : "text-base",
                   )}
                 >
@@ -263,13 +431,13 @@ function CareerCard({
                 {career.source && <SourceBadge source={career.source} />}
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-slate-500">{career.category}</span>
+                <span className="text-xs text-muted-foreground">{career.category}</span>
                 {career.external_url && (
                   <a
                     href={career.external_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-0.5 text-xs text-blue-500 hover:text-blue-700 transition-colors"
+                    className="inline-flex items-center gap-0.5 text-xs text-blue-500 hover:text-blue-400 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                   >
                     View on O*NET
                     <ExternalLink className="h-3 w-3" />
@@ -287,7 +455,7 @@ function CareerCard({
         {/* Fit reasoning preview */}
         <p
           className={cn(
-            "mt-3 text-sm text-slate-600 leading-relaxed",
+            "mt-3 text-sm text-muted-foreground leading-relaxed user-content",
             rank !== 1 && "line-clamp-2",
           )}
         >
@@ -298,11 +466,12 @@ function CareerCard({
         <Accordion
           type="single"
           collapsible
-          defaultValue={defaultOpen ? "details" : undefined}
+          value={accordionValue}
+          onValueChange={setAccordionValue}
           className="mt-3"
         >
-          <AccordionItem value="details" className="border-t border-slate-100">
-            <AccordionTrigger className="text-sm text-slate-500 py-3 hover:no-underline hover:text-primary">
+          <AccordionItem value="details" className="border-t border-border">
+            <AccordionTrigger className="text-sm text-muted-foreground py-3 hover:no-underline hover:text-primary">
               Full analysis
             </AccordionTrigger>
             <AccordionContent>
@@ -310,27 +479,27 @@ function CareerCard({
                 {/* Strengths & Risks */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                    <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">
                       Strengths
                     </p>
                     <ul className="space-y-1.5">
                       {career.strengths.map((s) => (
-                        <li key={s} className="flex gap-2 text-sm text-slate-700">
+                        <li key={s} className="flex gap-2 text-sm text-foreground">
                           <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                          {s}
+                          <span className="user-content min-w-0">{s}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                    <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">
                       Risks
                     </p>
                     <ul className="space-y-1.5">
                       {career.risks.map((r) => (
-                        <li key={r} className="flex gap-2 text-sm text-slate-700">
+                        <li key={r} className="flex gap-2 text-sm text-foreground">
                           <XCircle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" />
-                          {r}
+                          <span className="user-content min-w-0">{r}</span>
                         </li>
                       ))}
                     </ul>
@@ -339,21 +508,21 @@ function CareerCard({
 
                 {/* Skill gaps */}
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">
                     Skill gaps
                   </p>
                   {career.skill_gaps.length === 0 ? (
-                    <p className="text-sm text-emerald-600 font-medium">
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
                       No skill gaps — you&apos;re a strong match!
                     </p>
                   ) : (
-                    <div className="rounded-lg border border-slate-200 overflow-hidden divide-y divide-slate-100">
+                    <div className="rounded-lg border border-border overflow-hidden divide-y divide-border">
                       {career.skill_gaps.map((g) => (
                         <div
                           key={g.skill}
                           className="flex items-center justify-between px-3 py-2"
                         >
-                          <span className="text-sm text-slate-700">{g.skill}</span>
+                          <span className="text-sm text-foreground user-content">{g.skill}</span>
                           <Badge variant={g.difficulty}>{g.difficulty}</Badge>
                         </div>
                       ))}
@@ -363,15 +532,15 @@ function CareerCard({
 
                 {/* Score breakdown */}
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
-                    Score breakdown
+                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-3">
+                    How we scored this
                   </p>
-                  <ScoreBreakdown scores={career.rule_scores} />
+                  <ScoreBreakdown scores={career.rule_scores} confidence={career.confidence} />
                 </div>
 
                 {/* Roadmap */}
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
+                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-3">
                     Learning roadmap
                   </p>
                   <div className="grid sm:grid-cols-3 gap-3">
@@ -380,6 +549,15 @@ function CareerCard({
                     ))}
                   </div>
                 </div>
+
+                {/* Course recommendations — only fetched once accordion opens */}
+                {isOpen && (
+                  <BridgeTheGap
+                    careerSlug={career.slug}
+                    careerName={career.name}
+                    gapSkills={career.skill_gaps.map((g) => g.skill)}
+                  />
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -393,23 +571,23 @@ function CareerCard({
 
 function ProposedCareerCard({ career }: { career: ProposedCareer }) {
   return (
-    <div className="bg-white rounded-xl border border-amber-200 shadow-sm p-4">
+    <div className="bg-card rounded-xl border border-amber-200 dark:border-amber-800 shadow-sm p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-base font-bold text-slate-900 leading-tight">
+            <h3 className="text-base font-bold text-foreground leading-tight break-words min-w-0">
               {career.name}
             </h3>
             <SourceBadge source="llm_proposed" />
           </div>
-          <span className="text-xs text-slate-500">{career.category}</span>
+          <span className="text-xs text-muted-foreground">{career.category}</span>
         </div>
       </div>
-      <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+      <p className="mt-2 text-sm text-muted-foreground leading-relaxed user-content">
         {career.description}
       </p>
       {career.rationale && (
-        <p className="mt-2 text-xs text-amber-700 italic border-t border-amber-100 pt-2">
+        <p className="mt-2 text-xs text-amber-700 dark:text-amber-400 italic border-t border-amber-100 dark:border-amber-800 pt-2 user-content">
           {career.rationale}
         </p>
       )}
@@ -438,11 +616,32 @@ export default function ResultsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [rerunning, setRerunning] = React.useState(false);
+  const [sharing, setSharing] = React.useState(false);
+  const [shared, setShared] = React.useState(false);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["recommendation", id],
     queryFn: () => api.getRecommendation(id),
   });
+
+  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+  const pdfHref = data ? `${apiBase}/recommendations/${data.id}/pdf` : "#";
+
+  const handleShare = async () => {
+    if (!data || sharing) return;
+    setSharing(true);
+    try {
+      await api.shareRecommendation(id);
+      const shareUrl = `${window.location.origin}/r/${id}`;
+      await navigator.clipboard.writeText(shareUrl);
+      setShared(true);
+      setTimeout(() => setShared(false), 3000);
+    } catch {
+      // clipboard may be denied — still mark public but don't show checkmark
+    } finally {
+      setSharing(false);
+    }
+  };
 
   const handleRerun = async () => {
     if (!data || rerunning) return;
@@ -459,41 +658,71 @@ export default function ResultsPage() {
   const proposed = data?.result.proposed_careers ?? [];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       {/* Sticky header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <header className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link
             href="/profile"
-            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             New profile
           </Link>
-          <span className="text-sm font-semibold text-slate-700 tracking-tight">
+          <span className="text-sm font-semibold text-foreground tracking-tight">
             Echelon
           </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRerun}
-            disabled={!data || rerunning}
-            className="gap-1.5 text-slate-600"
-          >
-            <RefreshCw
-              className={cn("h-3.5 w-3.5", rerunning && "animate-spin")}
-            />
-            Re-run
-          </Button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              disabled={!data}
+              className="gap-1.5"
+            >
+              <a href={pdfHref} download>
+                <Download className="h-3.5 w-3.5" />
+                PDF
+              </a>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleShare}
+              disabled={!data || sharing}
+              className="gap-1.5"
+              title="Copy shareable link to clipboard"
+            >
+              {shared ? (
+                <Check className="h-3.5 w-3.5 text-emerald-500" />
+              ) : (
+                <Share2 className="h-3.5 w-3.5" />
+              )}
+              {shared ? "Copied!" : "Share"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRerun}
+              disabled={!data || rerunning}
+              className="gap-1.5"
+            >
+              <RefreshCw
+                className={cn("h-3.5 w-3.5", rerunning && "animate-spin")}
+              />
+              Re-run
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-foreground">
             Your career matches
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Ranked by AI fit analysis across your skills, personality, and
             interests.
           </p>
@@ -504,8 +733,8 @@ export default function ResultsPage() {
         {isError && (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
             <AlertCircle className="h-8 w-8 text-destructive" />
-            <p className="font-semibold text-slate-800">Failed to load results</p>
-            <p className="text-sm text-slate-500">
+            <p className="font-semibold text-foreground">Failed to load results</p>
+            <p className="text-sm text-muted-foreground">
               {error instanceof Error ? error.message : "Unknown error"}
             </p>
             <Button
@@ -537,19 +766,19 @@ export default function ResultsPage() {
               <section className="mt-8">
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles className="h-4 w-4 text-amber-500" />
-                  <h2 className="text-sm font-semibold text-slate-700">
+                  <h2 className="text-sm font-semibold text-foreground">
                     AI-Generated Suggestions
                   </h2>
                   <span
-                    className="inline-flex items-center gap-1 text-xs text-slate-400 cursor-help"
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground cursor-help"
                     title="These careers were invented by the AI because your profile didn't closely match existing options. They may not yet exist as established roles — treat them as inspiration."
                   >
                     <Info className="h-3.5 w-3.5" />
                     Experimental
                   </span>
                 </div>
-                <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 mb-3">
-                  <p className="text-xs text-amber-700 leading-relaxed">
+                <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30 p-3 mb-3">
+                  <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
                     Your profile didn&apos;t closely match our career database, so our AI
                     generated these suggestions based on your unique combination of
                     skills and interests. These are not verified roles — they&apos;re

@@ -10,7 +10,7 @@ from app.llm.client import GroqError
 from app.models.career import Career
 from app.models.profile import Profile
 from app.models.recommendation import Recommendation
-from app.schemas.recommendation import RecommendationRead, RecommendationRequest
+from app.schemas.recommendation import RecommendationPublic, RecommendationRead, RecommendationRequest
 from app.services.matching import CareerData, ProfileData, rank_careers
 from app.services.proposer import run_proposal
 from app.services.ranker import run_ranking
@@ -210,4 +210,33 @@ async def get_recommendation(
     rec = result.scalar_one_or_none()
     if rec is None:
         raise HTTPException(status_code=404, detail="Recommendation not found")
+    return rec
+
+
+@router.post("/recommendations/{recommendation_id}/share", response_model=RecommendationRead)
+async def share_recommendation(
+    recommendation_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> Recommendation:
+    """Mark a recommendation as publicly shareable.  Idempotent."""
+    result = await db.execute(select(Recommendation).where(Recommendation.id == recommendation_id))
+    rec = result.scalar_one_or_none()
+    if rec is None:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+    rec.is_public = True
+    await db.commit()
+    await db.refresh(rec)
+    return rec
+
+
+@router.get("/recommendations/{recommendation_id}/public", response_model=RecommendationPublic)
+async def get_public_recommendation(
+    recommendation_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> Recommendation:
+    """Fetch a recommendation without auth — only works when is_public=True."""
+    result = await db.execute(select(Recommendation).where(Recommendation.id == recommendation_id))
+    rec = result.scalar_one_or_none()
+    if rec is None or not rec.is_public:
+        raise HTTPException(status_code=404, detail="Recommendation not found or not public")
     return rec

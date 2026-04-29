@@ -30,6 +30,38 @@
     --ring: 243 75% 59%;
 
     --radius: 0.5rem;
+
+    /* Confidence ring track colour (SVG can't use Tailwind dark: variants) */
+    --ring-track: #e2e8f0;
+  }
+
+  .dark {
+    --background: 222 47% 7%;
+    --foreground: 210 40% 96%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 96%;
+
+    --primary: 243 75% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 18%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 217 33% 18%;
+    --muted-foreground: 215 20% 60%;
+
+    --accent: 243 75% 15%;
+    --accent-foreground: 243 75% 75%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 243 75% 65%;
+
+    --ring-track: hsl(217 33% 20%);
   }
 }
 
@@ -39,5 +71,14 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  /* Apply to any element that renders user-supplied or LLM-generated text.
+     Prevents long unbroken strings from causing horizontal overflow. */
+  .user-content {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 }
