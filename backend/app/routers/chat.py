@@ -79,14 +79,18 @@ def _chat_error(reason: str, status: int = 400) -> HTTPException:
 async def post_chat_message(
     request: Request,
     recommendation_id: uuid.UUID,
-    message: Annotated[str, Form(description="The user's message text")],
+    message: Annotated[
+        str,
+        Form(description="The user's message text. May be empty if a file is attached."),
+    ] = "",
     file: Annotated[
         UploadFile | None,
         File(description="Optional attachment — PDF, DOCX, TXT, or image"),
     ] = None,
     db: AsyncSession = Depends(get_db),
 ) -> ChatMessageRead:
-    if not message.strip() and file is None:
+    # Empty-string message is allowed when a file is attached, otherwise reject
+    if not message.strip() and (file is None or not file.filename):
         raise _chat_error("Message text or an attachment is required.")
 
     attachment = None
