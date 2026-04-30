@@ -153,3 +153,23 @@ export interface CourseRecommendResponse {
   courses: Course[];
   source_note: string;
 }
+
+// ── Vantage chatbot ─────────────────────────────────────────────────────────
+
+export type ChatRole = "user" | "assistant";
+export type AttachmentKind = "pdf" | "docx" | "txt" | "image";
+
+export interface ChatMessage {
+  id: string;
+  recommendation_id: string;
+  role: ChatRole;
+  content: string;
+  attachment_kind: AttachmentKind | null;
+  attachment_name: string | null;
+  attachment_excerpt: string | null;
+  created_at: string;
+}
+
+export interface ChatHistoryResponse {
+  messages: ChatMessage[];
+}

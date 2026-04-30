@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Vantage } from "@/components/Vantage";
 import {
   Accordion,
   AccordionContent,
@@ -795,6 +796,9 @@ export default function ResultsPage() {
           </div>
         )}
       </main>
+
+      {/* Vantage chatbot — only mount when we have a recommendation id */}
+      {data && <Vantage recommendationId={data.id} />}
     </div>
   );
 }

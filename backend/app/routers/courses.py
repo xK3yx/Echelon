@@ -37,8 +37,10 @@ _SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 class CourseRecommendResponse(BaseModel):
     courses: list[Course]
     source_note: str = (
-        "Courses sourced from YouTube and web search (Tavily). "
-        "Echelon has no partnerships with content creators or platforms. "
+        "YouTube results are full playlists (course series) rather than single "
+        "videos so you get a structured learning path. Web results come from "
+        "Tavily and may include Udemy, Coursera, edX, freeCodeCamp etc. "
+        "Echelon has no partnerships with platforms or creators. "
         "Relevance scores are LLM estimates, not guarantees."
     )
 

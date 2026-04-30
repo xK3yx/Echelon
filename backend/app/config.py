@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     groq_model_ranking: str = "llama-3.3-70b-versatile"
     # Smaller model used only for pure formatting/extraction steps (faster, cheaper)
     groq_model_extraction: str = "llama-3.1-8b-instant"
+    # Vantage chat (Phase B) — text and vision-capable models
+    groq_model_chat: str = "llama-3.3-70b-versatile"
+    groq_model_chat_vision: str = "meta-llama/llama-4-scout-17b-16e-instruct"
     debug: bool = False
     # Single shared token for admin endpoints. Empty string = admin features disabled.
     admin_token: str = ""

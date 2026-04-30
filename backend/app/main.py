@@ -7,7 +7,18 @@ from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.limiter import limiter
-from app.routers import admin, analyze, careers, courses, export, health, profiles, recommendations, resume
+from app.routers import (
+    admin,
+    analyze,
+    careers,
+    chat,
+    courses,
+    export,
+    health,
+    profiles,
+    recommendations,
+    resume,
+)
 
 app = FastAPI(
     title="Echelon v2.2",
@@ -93,4 +104,5 @@ app.include_router(analyze.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(resume.router, prefix="/api")
 app.include_router(courses.router, prefix="/api")
+app.include_router(chat.router, prefix="/api")
 app.include_router(export.router, prefix="/api")

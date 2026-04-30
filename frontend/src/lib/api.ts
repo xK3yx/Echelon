@@ -1,6 +1,8 @@
 import type {
   AnalyzeResponse,
   CareerRead,
+  ChatHistoryResponse,
+  ChatMessage,
   CourseRecommendResponse,
   ProfileCreate,
   ProfileRead,
@@ -84,6 +86,36 @@ export const api = {
     request<CourseRecommendResponse>(
       `/courses/recommend?career_slug=${encodeURIComponent(careerSlug)}&career_name=${encodeURIComponent(careerName)}&skills=${encodeURIComponent(gapSkills.join(","))}`,
     ),
+
+  /** Vantage chatbot — list messages for a recommendation. */
+  getChatHistory: (recommendationId: string) =>
+    request<ChatHistoryResponse>(`/chat/${recommendationId}/messages`),
+
+  /** Vantage chatbot — send a message with optional attachment. */
+  sendChatMessage: async (
+    recommendationId: string,
+    message: string,
+    file?: File | null,
+  ): Promise<ChatMessage> => {
+    const form = new FormData();
+    form.append("message", message);
+    if (file) form.append("file", file);
+    const res = await fetch(
+      `${API_BASE}/chat/${recommendationId}/messages`,
+      { method: "POST", body: form },
+    );
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as {
+        error?: { code?: string; message?: string };
+        detail?: { code?: string; message?: string } | string;
+      };
+      const err = body.error ?? body.detail;
+      const code = typeof err === "object" ? err?.code : undefined;
+      const msg = typeof err === "object" ? err?.message : (err as string);
+      throw new ApiError(res.status, code ?? "UNKNOWN_ERROR", msg ?? `HTTP ${res.status}`);
+    }
+    return res.json() as Promise<ChatMessage>;
+  },
 
   /** Multipart upload — does not go through the JSON `request` helper. */
   parseResume: async (file: File): Promise<ResumeParseResponse> => {
