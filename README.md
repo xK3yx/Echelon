@@ -3,7 +3,7 @@
 **AI-assisted career intelligence.** Describe your skills, personality, and interests; Echelon ranks career paths against your profile using a deterministic rule engine followed by a Groq LLM re-ranker, generates a per-career skill-gap analysis with a three-phase learning roadmap, recommends YouTube playlist courses to bridge each gap, and lets you keep the conversation going with **Vantage**, an AI career-counsellor chatbot. When no strong match is found, a Stage 2.5 LLM proposal step generates speculative career suggestions tailored to your profile.
 
 > **About this project**
-> Echelon began as my final-year project for the **Diploma in Information Technology** at SEGi College Kota Damansara. This repository is a refined and substantially expanded follow-on to that submission — adding resume import, dark mode, course recommendations, public share links, PDF export, an onboarding tour, deployment configs, the Vantage chatbot, and full multimodal attachment handling. The original academic version has been preserved in the v2 / v2.1 git history; the current `main` is v2.2.
+> Echelon began as my final-year project for the **Diploma in Information Technology**. This repository is a refined and substantially expanded follow-on to that submission — adding resume import, dark mode, course recommendations, public share links, PDF export, an onboarding tour, deployment configs, the Vantage chatbot, and full multimodal attachment handling. The original academic version has been preserved in the v2 / v2.1 git history; the current `main` is v2.2.
 
 ---
 
