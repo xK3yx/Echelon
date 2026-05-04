@@ -114,6 +114,16 @@ async def post_chat_message(
             raise HTTPException(status_code=404, detail="Recommendation not found")
         raise
     except GroqError as exc:
+        # If Groq complains about the request itself (4xx) it's almost
+        # always a problem with what the user sent — most commonly an
+        # image that's too small or in an unsupported format. Surface
+        # that as a 400 with a friendly message so the frontend can
+        # show it without scaring the user with a "Bad Gateway".
+        if 400 <= exc.status_code < 500:
+            raise _chat_error(
+                "We couldn't process that attachment. "
+                "Try a different image (at least 64x64 pixels) or remove it.",
+            ) from exc
         raise HTTPException(
             status_code=502, detail=f"LLM error: {exc}"
         ) from exc
