@@ -45,3 +45,7 @@ Thumbs.db
 
 # Claude Code working directory
 .claude/
+
+# Portfolio collateral (kept local, shared separately)
+docs/*.docx
+docs/*.pdf
