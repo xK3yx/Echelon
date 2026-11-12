@@ -14,6 +14,7 @@ Raises:
   ValueError("scanned_pdf")     — PDF appears to be scanned / image-only
   Exception                      — any other IO / parsing failure (caller wraps)
 """
+
 from __future__ import annotations
 
 import io
@@ -31,9 +32,7 @@ def extract_text(file_bytes: bytes, mime_type: str) -> str:
     """Dispatch to the correct extractor based on MIME type."""
     if mime_type == "application/pdf":
         return _extract_pdf(file_bytes)
-    if mime_type == (
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ):
+    if mime_type == ("application/vnd.openxmlformats-officedocument.wordprocessingml.document"):
         return _extract_docx(file_bytes)
     # text/plain (and any other allowed type)
     return _extract_txt(file_bytes)

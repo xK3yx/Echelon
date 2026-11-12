@@ -15,6 +15,7 @@ Covers:
     · low_confidence      — LLM returns confidence=0.3, combined < threshold → 400
     · extraction_failed   — LLM returns invalid JSON on both attempts → 400
 """
+
 from __future__ import annotations
 
 import json
@@ -169,9 +170,7 @@ async def test_parse_valid_resume(client: AsyncClient, monkeypatch):
     """Valid resume text + successful LLM extraction → 200 with all expected fields."""
     import app.services.resume.extractor as extractor_mod
 
-    monkeypatch.setattr(
-        extractor_mod.groq, "chat_completion", _mock_llm(_GOOD_LLM_RESPONSE)
-    )
+    monkeypatch.setattr(extractor_mod.groq, "chat_completion", _mock_llm(_GOOD_LLM_RESPONSE))
 
     response = await client.post(
         "/api/resume/parse",
@@ -255,9 +254,7 @@ async def test_parse_extraction_failed(client: AsyncClient, monkeypatch):
     """
     import app.services.resume.extractor as extractor_mod
 
-    monkeypatch.setattr(
-        extractor_mod.groq, "chat_completion", _mock_llm_invalid_json()
-    )
+    monkeypatch.setattr(extractor_mod.groq, "chat_completion", _mock_llm_invalid_json())
 
     response = await client.post(
         "/api/resume/parse",

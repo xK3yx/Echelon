@@ -8,6 +8,7 @@ Covers:
   - Full CRUD cycle (create → read → update → soft-delete)
   - Proposed career listing + verification flow
 """
+
 import uuid
 
 import pytest
@@ -65,9 +66,7 @@ async def test_admin_wrong_token_returns_401(client: AsyncClient):
     assert response.status_code == 401
 
 
-async def test_admin_disabled_when_token_empty_returns_503(
-    client: AsyncClient, monkeypatch
-):
+async def test_admin_disabled_when_token_empty_returns_503(client: AsyncClient, monkeypatch):
     monkeypatch.setattr(cfg.settings, "admin_token", "")
     response = await client.get("/api/admin/careers/proposed", headers=AUTH)
     assert response.status_code == 503
@@ -192,8 +191,11 @@ async def test_verify_career_flow(client: AsyncClient, db: AsyncSession):
         required_skills=["AI Ethics", "Policy Analysis", "Python"],
         optional_skills=["Machine Learning", "Legal Research"],
         personality_fit={
-            "openness": 75, "conscientiousness": 80, "extraversion": 50,
-            "agreeableness": 72, "neuroticism": 35,
+            "openness": 75,
+            "conscientiousness": 80,
+            "extraversion": 50,
+            "agreeableness": 72,
+            "neuroticism": 35,
         },
         difficulty="medium",
         growth_potential="high",

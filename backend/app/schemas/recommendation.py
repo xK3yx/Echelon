@@ -25,6 +25,7 @@ class RecommendationRead(BaseModel):
 
 class RecommendationPublic(BaseModel):
     """Slimmed-down read schema for public share pages — omits profile_id."""
+
     id: UUID
     result: dict
     model_used: str

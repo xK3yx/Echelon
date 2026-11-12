@@ -5,6 +5,7 @@ Searches the web for tutorial/course content relevant to a career + skill
 gaps.  Returns an empty list when the API key is not configured or on any
 API error — the aggregator handles graceful degradation.
 """
+
 from __future__ import annotations
 
 import logging
@@ -84,6 +85,7 @@ async def search_courses(career_name: str, gap_skills: list[str]) -> list[dict]:
         # Derive a short channel/source label from the domain
         try:
             from urllib.parse import urlparse
+
             domain = urlparse(url).netloc.lstrip("www.")
         except Exception:
             domain = "web"

@@ -7,9 +7,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-os.environ.setdefault(
-    "DATABASE_URL", "postgresql+asyncpg://echelon:echelon@localhost:5432/echelon"
-)
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://echelon:echelon@localhost:5432/echelon")
 
 from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
@@ -58,19 +56,15 @@ def pytest_sessionfinish(session, exitstatus):
     shared dev database doesn't accumulate "Test Career abc12345" rows on
     every test run.
     """
+
     async def _cleanup():
         e = create_async_engine(_DB_URL)
         try:
             async with async_sessionmaker(e)() as s:
                 rows = await s.execute(select(Career))
-                victims = [
-                    c.id for c in rows.scalars().all()
-                    if _TEST_NAME_PATTERN.search(c.name)
-                ]
+                victims = [c.id for c in rows.scalars().all() if _TEST_NAME_PATTERN.search(c.name)]
                 if victims:
-                    await s.execute(
-                        delete(Career).where(Career.id.in_(victims))
-                    )
+                    await s.execute(delete(Career).where(Career.id.in_(victims)))
                     await s.commit()
         finally:
             await e.dispose()

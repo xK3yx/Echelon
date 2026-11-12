@@ -7,6 +7,7 @@ select and score the top 5 most relevant for a given career + skill gaps.
 Uses groq_model_extraction (small model) — this is a straightforward
 selection/scoring task, not deep reasoning.
 """
+
 from __future__ import annotations
 
 import json
@@ -133,7 +134,5 @@ async def rank_courses(
             )
         )
 
-    logger.info(
-        "course_ranker: ranked %d courses for '%s'", len(courses), career_name
-    )
+    logger.info("course_ranker: ranked %d courses for '%s'", len(courses), career_name)
     return courses

@@ -7,6 +7,7 @@ attachment metadata. Attachment binaries are NOT persisted — only a
 short excerpt (e.g. extracted text preview) so the conversation can
 reference what was sent without holding files.
 """
+
 from __future__ import annotations
 
 import uuid
@@ -25,18 +26,14 @@ ATTACHMENT_KINDS = ("pdf", "docx", "image", "txt")
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     recommendation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("recommendations.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    role: Mapped[str] = mapped_column(
-        Enum(*CHAT_ROLES, name="chat_role"), nullable=False
-    )
+    role: Mapped[str] = mapped_column(Enum(*CHAT_ROLES, name="chat_role"), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     # Attachment metadata — kind is one of "pdf"|"docx"|"image"|"txt" or None
     attachment_kind: Mapped[str | None] = mapped_column(Text, nullable=True)

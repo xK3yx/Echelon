@@ -6,9 +6,8 @@ the user's profile and their top-5 ranked careers, so users can ask
 "why was I recommended this?" or "what should I learn first?" without
 having to re-explain their background.
 """
-from __future__ import annotations
 
-import json
+from __future__ import annotations
 
 VANTAGE_SYSTEM_PROMPT = """\
 You are Vantage, a career counselling AI assistant inside the Echelon \
@@ -82,9 +81,7 @@ def build_context_block(profile: dict, recommendation_result: dict) -> str:
     Build the persistent context block that prepends every Vantage
     conversation. Combines profile + recommendation result.
     """
-    return (
-        f"{_format_profile(profile)}\n\n{_format_recommendation(recommendation_result)}"
-    )
+    return f"{_format_profile(profile)}\n\n{_format_recommendation(recommendation_result)}"
 
 
 def build_attachment_note(

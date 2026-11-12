@@ -11,6 +11,7 @@ Vantage chatbot endpoints — career conversation tied to a recommendation.
 Auth model: same as recommendations — possession of the UUID is enough.
 The owner shares the URL/page with whoever they want; no account needed.
 """
+
 from __future__ import annotations
 
 import logging
@@ -25,12 +26,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.limiter import limiter
 from app.llm.client import GroqError
-from app.services.chat.attachments import AttachmentError, process as process_attachment
+from app.services.chat.attachments import AttachmentError
+from app.services.chat.attachments import process as process_attachment
 from app.services.chat.service import load_history, send_message
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["chat"])
+
 
 # Pydantic v2 read schema mirrors ChatMessage
 class ChatMessageRead(BaseModel):
@@ -59,9 +62,7 @@ async def get_chat_history(
     db: AsyncSession = Depends(get_db),
 ) -> ChatHistoryResponse:
     history = await load_history(recommendation_id, db)
-    return ChatHistoryResponse(
-        messages=[ChatMessageRead.model_validate(m) for m in history]
-    )
+    return ChatHistoryResponse(messages=[ChatMessageRead.model_validate(m) for m in history])
 
 
 def _chat_error(reason: str, status: int = 400) -> HTTPException:
@@ -124,8 +125,6 @@ async def post_chat_message(
                 "We couldn't process that attachment. "
                 "Try a different image (at least 64x64 pixels) or remove it.",
             ) from exc
-        raise HTTPException(
-            status_code=502, detail=f"LLM error: {exc}"
-        ) from exc
+        raise HTTPException(status_code=502, detail=f"LLM error: {exc}") from exc
 
     return ChatMessageRead.model_validate(assistant)

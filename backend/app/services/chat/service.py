@@ -8,6 +8,7 @@ Responsibilities:
   4. Pick the right model (vision when an image is present, text otherwise)
   5. Call Groq, persist user message + assistant response, return them
 """
+
 from __future__ import annotations
 
 import logging
@@ -38,9 +39,7 @@ _MAX_HISTORY_TURNS = 12
 _MAX_RESPONSE_TOKENS = 800
 
 
-async def load_history(
-    recommendation_id: uuid.UUID, db: AsyncSession
-) -> list[ChatMessage]:
+async def load_history(recommendation_id: uuid.UUID, db: AsyncSession) -> list[ChatMessage]:
     """Return ChatMessage rows for *recommendation_id* in chronological order."""
     rows = await db.execute(
         select(ChatMessage)
@@ -54,16 +53,12 @@ async def _load_recommendation_with_profile(
     recommendation_id: uuid.UUID, db: AsyncSession
 ) -> tuple[Recommendation, Profile]:
     """Load the recommendation + its source profile, or raise ValueError."""
-    rec_row = await db.execute(
-        select(Recommendation).where(Recommendation.id == recommendation_id)
-    )
+    rec_row = await db.execute(select(Recommendation).where(Recommendation.id == recommendation_id))
     rec = rec_row.scalar_one_or_none()
     if rec is None:
         raise ValueError("recommendation_not_found")
 
-    prof_row = await db.execute(
-        select(Profile).where(Profile.id == rec.profile_id)
-    )
+    prof_row = await db.execute(select(Profile).where(Profile.id == rec.profile_id))
     profile = prof_row.scalar_one_or_none()
     if profile is None:
         raise ValueError("profile_not_found")
@@ -120,8 +115,7 @@ def _build_messages(
     user_text_with_doc = user_text
     if attachment and attachment.kind != "image":
         user_text_with_doc = (
-            build_attachment_note(attachment.kind, attachment.name, attachment.excerpt)
-            + user_text
+            build_attachment_note(attachment.kind, attachment.name, attachment.excerpt) + user_text
         )
 
     if has_image:

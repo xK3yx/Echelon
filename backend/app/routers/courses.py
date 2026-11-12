@@ -15,6 +15,7 @@ Response shape:
 Returns an empty courses list (not an error) when no providers are
 configured, so the frontend can render a graceful "no courses" state.
 """
+
 from __future__ import annotations
 
 import re

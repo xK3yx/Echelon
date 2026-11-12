@@ -11,6 +11,7 @@ Covers:
   - Name-deduplication: proposed career matching an existing name is dropped
   - Proposal skipped gracefully on LLM validation failure
 """
+
 import json
 import uuid
 from unittest.mock import AsyncMock, patch
@@ -50,11 +51,20 @@ _PROPOSAL_RESPONSE = {
                 "Works at the intersection of data engineering and privacy compliance."
             ),
             "category": "Computer & Mathematical",
-            "required_skills": ["Python", "Data Generation", "Privacy Engineering", "SQL", "ML Pipelines"],
+            "required_skills": [
+                "Python",
+                "Data Generation",
+                "Privacy Engineering",
+                "SQL",
+                "ML Pipelines",
+            ],
             "optional_skills": ["Differential Privacy", "GANs"],
             "personality_fit": {
-                "openness": 72, "conscientiousness": 78, "extraversion": 38,
-                "agreeableness": 58, "neuroticism": 32,
+                "openness": 72,
+                "conscientiousness": 78,
+                "extraversion": 38,
+                "agreeableness": 58,
+                "neuroticism": 32,
             },
             "difficulty": "medium",
             "growth_potential": "high",
@@ -69,10 +79,12 @@ _PROPOSAL_RESPONSE = {
 
 def _mock_groq_response(payload: dict):
     """Return an AsyncMock that simulates a Groq chat_completion response."""
-    mock = AsyncMock(return_value={
-        "choices": [{"message": {"content": json.dumps(payload)}}],
-        "usage": {"prompt_tokens": 100, "completion_tokens": 200},
-    })
+    mock = AsyncMock(
+        return_value={
+            "choices": [{"message": {"content": json.dumps(payload)}}],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 200},
+        }
+    )
     return mock
 
 
@@ -85,8 +97,11 @@ def _career_fixture(suffix: str, *, source: str = "manual", verified: bool = Tru
         required_skills=["COBOL"],  # no overlap with VALID_PROFILE skills
         optional_skills=[],
         personality_fit={
-            "openness": 50, "conscientiousness": 50, "extraversion": 50,
-            "agreeableness": 50, "neuroticism": 50,
+            "openness": 50,
+            "conscientiousness": 50,
+            "extraversion": 50,
+            "agreeableness": 50,
+            "neuroticism": 50,
         },
         difficulty="medium",
         growth_potential="medium",
@@ -106,15 +121,24 @@ async def test_run_proposal_returns_career_dicts(monkeypatch):
     """proposer.run_proposal returns validated dicts when the LLM responds correctly."""
     import app.services.proposer as proposer_mod
 
-    monkeypatch.setattr(proposer_mod.groq, "chat_completion", _mock_groq_response(_PROPOSAL_RESPONSE))
+    monkeypatch.setattr(
+        proposer_mod.groq, "chat_completion", _mock_groq_response(_PROPOSAL_RESPONSE)
+    )
 
     from app.services.proposer import run_proposal
 
     result = await run_proposal(
-        profile={"skills": ["Python"], "interests": ["data"], "personality": {
-            "openness": 70, "conscientiousness": 80, "extraversion": 40,
-            "agreeableness": 60, "neuroticism": 30,
-        }},
+        profile={
+            "skills": ["Python"],
+            "interests": ["data"],
+            "personality": {
+                "openness": 70,
+                "conscientiousness": 80,
+                "extraversion": 40,
+                "agreeableness": 60,
+                "neuroticism": 30,
+            },
+        },
         top_career_names=["Data Scientist"],
         existing_names={"Data Scientist"},
         model="llama-3.3-70b-versatile",
@@ -135,15 +159,24 @@ async def test_run_proposal_deduplicates_existing_names(monkeypatch):
 
     # Existing names contains the proposed career name
     existing = {"Synthetic Data Engineer", "Data Scientist"}
-    monkeypatch.setattr(proposer_mod.groq, "chat_completion", _mock_groq_response(_PROPOSAL_RESPONSE))
+    monkeypatch.setattr(
+        proposer_mod.groq, "chat_completion", _mock_groq_response(_PROPOSAL_RESPONSE)
+    )
 
     from app.services.proposer import run_proposal
 
     result = await run_proposal(
-        profile={"skills": [], "interests": [], "personality": {
-            "openness": 50, "conscientiousness": 50, "extraversion": 50,
-            "agreeableness": 50, "neuroticism": 50,
-        }},
+        profile={
+            "skills": [],
+            "interests": [],
+            "personality": {
+                "openness": 50,
+                "conscientiousness": 50,
+                "extraversion": 50,
+                "agreeableness": 50,
+                "neuroticism": 50,
+            },
+        },
         top_career_names=[],
         existing_names=existing,
         model="llama-3.3-70b-versatile",
@@ -156,19 +189,28 @@ async def test_run_proposal_returns_empty_on_validation_failure(monkeypatch):
     """On two consecutive validation failures, run_proposal returns [] without raising."""
     import app.services.proposer as proposer_mod
 
-    bad_mock = AsyncMock(return_value={
-        "choices": [{"message": {"content": '{"not_the_right_key": []}'}}],
-        "usage": {},
-    })
+    bad_mock = AsyncMock(
+        return_value={
+            "choices": [{"message": {"content": '{"not_the_right_key": []}'}}],
+            "usage": {},
+        }
+    )
     monkeypatch.setattr(proposer_mod.groq, "chat_completion", bad_mock)
 
     from app.services.proposer import run_proposal
 
     result = await run_proposal(
-        profile={"skills": [], "interests": [], "personality": {
-            "openness": 50, "conscientiousness": 50, "extraversion": 50,
-            "agreeableness": 50, "neuroticism": 50,
-        }},
+        profile={
+            "skills": [],
+            "interests": [],
+            "personality": {
+                "openness": 50,
+                "conscientiousness": 50,
+                "extraversion": 50,
+                "agreeableness": 50,
+                "neuroticism": 50,
+            },
+        },
         top_career_names=[],
         existing_names=set(),
         model="llama-3.3-70b-versatile",
@@ -203,8 +245,10 @@ async def test_proposed_careers_in_response_shape(client: AsyncClient, db: Async
     create = await client.post("/api/profiles", json=VALID_PROFILE)
     profile_id = create.json()["id"]
 
-    with patch("app.routers.recommendations.run_ranking") as mock_rank, \
-         patch("app.routers.recommendations.run_gap_roadmap") as mock_gap:
+    with (
+        patch("app.routers.recommendations.run_ranking") as mock_rank,
+        patch("app.routers.recommendations.run_gap_roadmap") as mock_gap,
+    ):
 
         # Stub ranking output (model_construct bypasses min_length=5 for test use)
         from app.llm.validators import (
@@ -225,24 +269,48 @@ async def test_proposed_careers_in_response_shape(client: AsyncClient, db: Async
         )
         mock_rank.return_value = (
             RankingOutput.model_construct(ranked_careers=[ranked_item]),
-            [ScoredCareer(
-                career_id=str(career.id), slug=f"test-career-{tag}",
-                name=career.name, category=career.category,
-                total_score=0.5, skill_score=0.5, optional_score=0.0,
-                personality_score=0.8, interest_score=0.3,
-            )],
+            [
+                ScoredCareer(
+                    career_id=str(career.id),
+                    slug=f"test-career-{tag}",
+                    name=career.name,
+                    category=career.category,
+                    total_score=0.5,
+                    skill_score=0.5,
+                    optional_score=0.0,
+                    personality_score=0.8,
+                    interest_score=0.3,
+                )
+            ],
         )
-        mock_gap.return_value = GapRoadmapOutput(careers=[
-            CareerGapRoadmap(
-                slug=f"test-career-{tag}",
-                skill_gaps=[],
-                roadmap=[
-                    RoadmapPhase(phase="Beginner", skills=["Skill A"], projects=["P1", "P2"], duration_weeks=8),
-                    RoadmapPhase(phase="Intermediate", skills=["Skill B"], projects=["P3", "P4"], duration_weeks=12),
-                    RoadmapPhase(phase="Advanced", skills=["Skill C"], projects=["P5", "P6"], duration_weeks=16),
-                ],
-            )
-        ])
+        mock_gap.return_value = GapRoadmapOutput(
+            careers=[
+                CareerGapRoadmap(
+                    slug=f"test-career-{tag}",
+                    skill_gaps=[],
+                    roadmap=[
+                        RoadmapPhase(
+                            phase="Beginner",
+                            skills=["Skill A"],
+                            projects=["P1", "P2"],
+                            duration_weeks=8,
+                        ),
+                        RoadmapPhase(
+                            phase="Intermediate",
+                            skills=["Skill B"],
+                            projects=["P3", "P4"],
+                            duration_weeks=12,
+                        ),
+                        RoadmapPhase(
+                            phase="Advanced",
+                            skills=["Skill C"],
+                            projects=["P5", "P6"],
+                            duration_weeks=16,
+                        ),
+                    ],
+                )
+            ]
+        )
 
         response = await client.post(
             "/api/recommendations",
@@ -267,9 +335,11 @@ async def test_proposal_not_triggered_when_allow_proposed_false(
     create = await client.post("/api/profiles", json=VALID_PROFILE)
     profile_id = create.json()["id"]
 
-    with patch("app.routers.recommendations.run_ranking") as mock_rank, \
-         patch("app.routers.recommendations.run_gap_roadmap") as mock_gap, \
-         patch("app.routers.recommendations.run_proposal") as mock_propose:
+    with (
+        patch("app.routers.recommendations.run_ranking") as mock_rank,
+        patch("app.routers.recommendations.run_gap_roadmap") as mock_gap,
+        patch("app.routers.recommendations.run_proposal") as mock_propose,
+    ):
 
         _stub_ranking(mock_rank, mock_gap, career, tag)
         mock_propose.return_value = []
@@ -295,9 +365,11 @@ async def test_proposal_triggered_when_score_below_threshold(
     create = await client.post("/api/profiles", json=VALID_PROFILE)
     profile_id = create.json()["id"]
 
-    with patch("app.routers.recommendations.run_ranking") as mock_rank, \
-         patch("app.routers.recommendations.run_gap_roadmap") as mock_gap, \
-         patch("app.routers.recommendations.run_proposal") as mock_propose:
+    with (
+        patch("app.routers.recommendations.run_ranking") as mock_rank,
+        patch("app.routers.recommendations.run_gap_roadmap") as mock_gap,
+        patch("app.routers.recommendations.run_proposal") as mock_propose,
+    ):
 
         _stub_ranking(mock_rank, mock_gap, career, tag)
         mock_propose.return_value = []  # no proposals actually created
@@ -323,9 +395,11 @@ async def test_proposal_not_triggered_when_score_above_threshold(
     create = await client.post("/api/profiles", json=VALID_PROFILE)
     profile_id = create.json()["id"]
 
-    with patch("app.routers.recommendations.run_ranking") as mock_rank, \
-         patch("app.routers.recommendations.run_gap_roadmap") as mock_gap, \
-         patch("app.routers.recommendations.run_proposal") as mock_propose:
+    with (
+        patch("app.routers.recommendations.run_ranking") as mock_rank,
+        patch("app.routers.recommendations.run_gap_roadmap") as mock_gap,
+        patch("app.routers.recommendations.run_proposal") as mock_propose,
+    ):
 
         _stub_ranking(mock_rank, mock_gap, career, tag)
         mock_propose.return_value = []
@@ -359,8 +433,11 @@ async def test_proposed_career_persisted_with_correct_flags(
         "required_skills": ["Neuroscience", "Python", "Signal Processing", "UX Design", "ML"],
         "optional_skills": ["C++"],
         "personality_fit": {
-            "openness": 80, "conscientiousness": 70, "extraversion": 45,
-            "agreeableness": 65, "neuroticism": 35,
+            "openness": 80,
+            "conscientiousness": 70,
+            "extraversion": 45,
+            "agreeableness": 65,
+            "neuroticism": 35,
         },
         "difficulty": "high",
         "growth_potential": "high",
@@ -370,9 +447,11 @@ async def test_proposed_career_persisted_with_correct_flags(
         "rationale": "Great match given user's Python skills and interest in technology.",
     }
 
-    with patch("app.routers.recommendations.run_ranking") as mock_rank, \
-         patch("app.routers.recommendations.run_gap_roadmap") as mock_gap, \
-         patch("app.routers.recommendations.run_proposal") as mock_propose:
+    with (
+        patch("app.routers.recommendations.run_ranking") as mock_rank,
+        patch("app.routers.recommendations.run_gap_roadmap") as mock_gap,
+        patch("app.routers.recommendations.run_proposal") as mock_propose,
+    ):
 
         _stub_ranking(mock_rank, mock_gap, career, tag)
         mock_propose.return_value = [proposal_record]
@@ -391,9 +470,7 @@ async def test_proposed_career_persisted_with_correct_flags(
     assert "rationale" in pc
 
     # Confirm the career row was persisted in the DB
-    db_row = await db.execute(
-        select(Career).where(Career.name == proposal_record["name"])
-    )
+    db_row = await db.execute(select(Career).where(Career.name == proposal_record["name"]))
     saved = db_row.scalar_one_or_none()
     assert saved is not None
     assert saved.source == "llm_proposed"
@@ -426,21 +503,36 @@ def _stub_ranking(mock_rank, mock_gap, career: Career, tag: str) -> None:
     # model_construct bypasses the min_length=5 constraint — valid for test stubs
     mock_rank.return_value = (
         RankingOutput.model_construct(ranked_careers=[ranked_item]),
-        [ScoredCareer(
-            career_id=str(career.id), slug=f"test-career-{tag}",
-            name=career.name, category=career.category,
-            total_score=0.1, skill_score=0.1, optional_score=0.0,
-            personality_score=0.5, interest_score=0.1,
-        )],
+        [
+            ScoredCareer(
+                career_id=str(career.id),
+                slug=f"test-career-{tag}",
+                name=career.name,
+                category=career.category,
+                total_score=0.1,
+                skill_score=0.1,
+                optional_score=0.0,
+                personality_score=0.5,
+                interest_score=0.1,
+            )
+        ],
     )
-    mock_gap.return_value = GapRoadmapOutput(careers=[
-        CareerGapRoadmap(
-            slug=f"test-career-{tag}",
-            skill_gaps=[],
-            roadmap=[
-                RoadmapPhase(phase="Beginner", skills=["A"], projects=["P1", "P2"], duration_weeks=8),
-                RoadmapPhase(phase="Intermediate", skills=["B"], projects=["P3", "P4"], duration_weeks=12),
-                RoadmapPhase(phase="Advanced", skills=["C"], projects=["P5", "P6"], duration_weeks=16),
-            ],
-        )
-    ])
+    mock_gap.return_value = GapRoadmapOutput(
+        careers=[
+            CareerGapRoadmap(
+                slug=f"test-career-{tag}",
+                skill_gaps=[],
+                roadmap=[
+                    RoadmapPhase(
+                        phase="Beginner", skills=["A"], projects=["P1", "P2"], duration_weeks=8
+                    ),
+                    RoadmapPhase(
+                        phase="Intermediate", skills=["B"], projects=["P3", "P4"], duration_weeks=12
+                    ),
+                    RoadmapPhase(
+                        phase="Advanced", skills=["C"], projects=["P5", "P6"], duration_weeks=16
+                    ),
+                ],
+            )
+        ]
+    )

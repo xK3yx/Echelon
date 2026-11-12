@@ -4,6 +4,7 @@ Admin career management endpoints.
 All routes require Authorization: Bearer <ADMIN_TOKEN>.
 If ADMIN_TOKEN env var is unset the dependency raises 503 before any handler runs.
 """
+
 import uuid
 from datetime import UTC, datetime
 
@@ -57,9 +58,7 @@ async def create_career(
 ) -> Career:
     # Reject duplicate name or slug
     existing = await db.execute(
-        select(Career).where(
-            (Career.name == body.name) | (Career.slug == body.slug)
-        )
+        select(Career).where((Career.name == body.name) | (Career.slug == body.slug))
     )
     if existing.scalar_one_or_none() is not None:
         raise HTTPException(

@@ -3,6 +3,7 @@ Heuristic resume detection — no LLM, no IO, fully unit-testable.
 
 Scores a text on 5 criteria (0–5).  Callers should reject texts scoring < 3.
 """
+
 from __future__ import annotations
 
 import re

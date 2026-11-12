@@ -266,12 +266,8 @@ class TestRankCareers:
         assert all(isinstance(r, ScoredCareer) for r in result)
 
     def test_perfect_skill_match_ranks_above_no_match(self):
-        perfect = _career(
-            id="perfect", slug="perfect", name="Perfect", required_skills=["Python"]
-        )
-        zero = _career(
-            id="zero", slug="zero", name="Zero", required_skills=["COBOL"]
-        )
+        perfect = _career(id="perfect", slug="perfect", name="Perfect", required_skills=["Python"])
+        zero = _career(id="zero", slug="zero", name="Zero", required_skills=["COBOL"])
         profile = _profile(skills=["Python"], personality=NEUTRAL_PERSONALITY)
         result = rank_careers(profile, [zero, perfect])
         assert result[0].slug == "perfect"

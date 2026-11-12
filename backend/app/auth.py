@@ -9,6 +9,7 @@ The token is a single shared secret read from the ADMIN_TOKEN env var.
 An empty or unset ADMIN_TOKEN disables all admin endpoints (returns 503).
 This is intentionally minimal — not a multi-user auth system.
 """
+
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 

@@ -9,6 +9,7 @@ The excerpt is stored on the chat_messages row so future turns of the
 conversation can reference what was attached without re-processing the
 file. Binary bytes are NEVER persisted.
 """
+
 from __future__ import annotations
 
 import base64
@@ -62,9 +63,7 @@ def process(file_bytes: bytes, filename: str) -> ProcessedAttachment:
     failure. The caller (chat router) translates that to a 400 response.
     """
     if len(file_bytes) > _MAX_ATTACHMENT_SIZE_MB * 1024 * 1024:
-        raise AttachmentError(
-            f"Attachment exceeds {_MAX_ATTACHMENT_SIZE_MB} MB limit."
-        )
+        raise AttachmentError(f"Attachment exceeds {_MAX_ATTACHMENT_SIZE_MB} MB limit.")
 
     detected_mime: str = magic.from_buffer(file_bytes, mime=True)
 

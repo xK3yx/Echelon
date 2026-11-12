@@ -10,6 +10,7 @@ Orchestrates:
 Returns an empty list gracefully when no providers are configured (both
 API keys absent) — the frontend renders a "no courses available" state.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -97,9 +98,7 @@ async def get_courses(
     expires_at = now + timedelta(days=settings.course_cache_ttl_days)
     course_dicts = [c.to_dict() for c in courses]
 
-    existing = await db.execute(
-        select(CourseCache).where(CourseCache.career_slug == career_slug)
-    )
+    existing = await db.execute(select(CourseCache).where(CourseCache.career_slug == career_slug))
     row = existing.scalar_one_or_none()
 
     if row is None:

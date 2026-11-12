@@ -1,6 +1,7 @@
 """
 Pydantic schemas for the resume parsing service.
 """
+
 from __future__ import annotations
 
 from typing import Literal

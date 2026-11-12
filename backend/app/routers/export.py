@@ -9,6 +9,7 @@ WeasyPrint requires libcairo + libpango on the host (installed in the
 production Dockerfile).  If the import fails at startup the endpoint is
 registered but returns 503 so the rest of the API keeps working.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -44,6 +45,7 @@ _SOURCE_LABELS = {
 
 try:
     import weasyprint as _wp
+
     _WEASYPRINT_AVAILABLE = True
 except Exception as _exc:  # pragma: no cover
     logger.warning("weasyprint not available — PDF export will return 503: %s", _exc)
@@ -62,9 +64,7 @@ async def export_pdf(
             detail="PDF export is not available in this environment.",
         )
 
-    result = await db.execute(
-        select(Recommendation).where(Recommendation.id == recommendation_id)
-    )
+    result = await db.execute(select(Recommendation).where(Recommendation.id == recommendation_id))
     rec = result.scalar_one_or_none()
     if rec is None:
         raise HTTPException(status_code=404, detail="Recommendation not found")
@@ -89,7 +89,5 @@ async def export_pdf(
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={
-            "Content-Disposition": f'attachment; filename="echelon-report-{short_id}.pdf"'
-        },
+        headers={"Content-Disposition": f'attachment; filename="echelon-report-{short_id}.pdf"'},
     )

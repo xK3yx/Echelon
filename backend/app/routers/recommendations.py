@@ -10,7 +10,11 @@ from app.llm.client import GroqError
 from app.models.career import Career
 from app.models.profile import Profile
 from app.models.recommendation import Recommendation
-from app.schemas.recommendation import RecommendationPublic, RecommendationRead, RecommendationRequest
+from app.schemas.recommendation import (
+    RecommendationPublic,
+    RecommendationRead,
+    RecommendationRequest,
+)
 from app.services.matching import CareerData, ProfileData, rank_careers
 from app.services.proposer import run_proposal
 from app.services.ranker import run_ranking
@@ -99,9 +103,7 @@ async def create_recommendation(
     if body.allow_proposed and top_score < settings.propose_threshold:
         existing_names = {c.name for c in careers}
         top5_names = [item.slug for item in ranking_output.ranked_careers]
-        top5_display_names = [
-            career_by_slug[s].name for s in top5_names if s in career_by_slug
-        ]
+        top5_display_names = [career_by_slug[s].name for s in top5_names if s in career_by_slug]
 
         proposal_dicts = await run_proposal(
             profile=profile_data,

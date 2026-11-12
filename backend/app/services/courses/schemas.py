@@ -4,6 +4,7 @@ Shared schemas for the course recommendation pipeline.
 Course dicts are stored as-is in the CourseCache JSONB column, so every
 field must be JSON-serialisable.
 """
+
 from __future__ import annotations
 
 from pydantic import BaseModel, Field

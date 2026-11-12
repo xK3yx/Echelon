@@ -7,6 +7,7 @@ Two-attempt strategy:
 
 Raises ValueError("extraction_failed") if both attempts fail validation.
 """
+
 from __future__ import annotations
 
 import json
@@ -100,13 +101,9 @@ async def extract_via_llm(
             return LLMResumeOutput(**parsed_data), warnings
 
         except (ValidationError, json.JSONDecodeError, KeyError) as exc:
-            logger.warning(
-                "resume_extract attempt=%d failed: %s", attempt_idx + 1, exc
-            )
+            logger.warning("resume_extract attempt=%d failed: %s", attempt_idx + 1, exc)
             if attempt_idx == 0:
-                warnings.append(
-                    "First extraction attempt failed; retried with a stricter prompt."
-                )
+                warnings.append("First extraction attempt failed; retried with a stricter prompt.")
             else:
                 raise ValueError("extraction_failed") from exc
 

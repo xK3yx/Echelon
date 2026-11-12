@@ -12,6 +12,7 @@ Design notes:
 - Deduplicates proposed names against the full set of existing career names
   (case-insensitive) before returning.
 """
+
 from __future__ import annotations
 
 import json
@@ -63,9 +64,7 @@ async def run_proposal(
         logger.warning("proposal validation failed (attempt 1): %s", exc)
         # Retry once with stricter prompt at lower temperature
         try:
-            strict = build_proposal_messages_strict(
-                profile, top_career_names, content
-            )
+            strict = build_proposal_messages_strict(profile, top_career_names, content)
             raw2 = await groq.chat_completion(
                 model=model,
                 messages=strict,

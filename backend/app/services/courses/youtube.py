@@ -8,6 +8,7 @@ series rather than one-off clips, giving users a structured learning path.
 Returns an empty list when the API key is not configured rather than
 raising — the aggregator handles graceful degradation.
 """
+
 from __future__ import annotations
 
 import logging
@@ -58,7 +59,9 @@ async def search_courses(career_name: str, gap_skills: list[str]) -> list[dict]:
             resp = await client.get(_SEARCH_URL, params=params)
         resp.raise_for_status()
     except httpx.HTTPStatusError as exc:
-        logger.warning("youtube: API error %d — %s", exc.response.status_code, exc.response.text[:200])
+        logger.warning(
+            "youtube: API error %d — %s", exc.response.status_code, exc.response.text[:200]
+        )
         return []
     except httpx.RequestError as exc:
         logger.warning("youtube: request error — %s", exc)

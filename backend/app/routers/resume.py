@@ -9,6 +9,7 @@ Validation chain (fail-fast):
   5. LLM extraction (with is_resume check; retries once on failure)
   6. Combined confidence threshold
 """
+
 import logging
 from typing import Annotated
 
@@ -139,9 +140,7 @@ async def parse_resume(
     # ── 5. LLM extraction ─────────────────────────────────────────────────────
     warnings: list[str] = []
     try:
-        llm_output, llm_warnings = await extract_via_llm(
-            text, model=settings.groq_model_extraction
-        )
+        llm_output, llm_warnings = await extract_via_llm(text, model=settings.groq_model_extraction)
         warnings.extend(llm_warnings)
     except GroqError as exc:
         raise HTTPException(
@@ -178,13 +177,9 @@ async def parse_resume(
 
     # Warn about fields that could not be determined
     if llm_output.education_level is None:
-        warnings.append(
-            "Education level could not be determined — please set it manually."
-        )
+        warnings.append("Education level could not be determined — please set it manually.")
     if not llm_output.skills:
-        warnings.append(
-            "No skills were detected — please add them manually."
-        )
+        warnings.append("No skills were detected — please add them manually.")
 
     return ResumeParseResponse(
         extracted=ExtractedProfile(
