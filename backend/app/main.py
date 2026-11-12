@@ -21,9 +21,9 @@ from app.routers import (
 )
 
 app = FastAPI(
-    title="Echelon v2.2",
+    title="Echelon v2.3",
     description="AI-assisted career intelligence API",
-    version="2.2.0",
+    version="2.3.0",
 )
 
 # Rate-limiter state (used by @limiter.limit() decorators in routers)

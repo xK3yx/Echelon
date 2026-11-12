@@ -97,7 +97,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-border">
         <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-muted-foreground">
-          <span>Echelon v2.2 — portfolio project by xK3yx</span>
+          <span>Echelon v2.3 — portfolio project by xK3yx</span>
           <a
             href="https://github.com/xK3yx/Echelon"
             target="_blank"

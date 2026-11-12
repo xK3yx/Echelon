@@ -1,9 +1,11 @@
 # Echelon
 
+[![CI](https://github.com/xK3yx/Echelon/actions/workflows/ci.yml/badge.svg)](https://github.com/xK3yx/Echelon/actions/workflows/ci.yml)
+
 **AI-assisted career intelligence.** Describe your skills, personality, and interests; Echelon ranks career paths against your profile using a deterministic rule engine followed by a Groq LLM re-ranker, generates a per-career skill-gap analysis with a three-phase learning roadmap, recommends YouTube playlist courses to bridge each gap, and lets you keep the conversation going with **Vantage**, an AI career-counsellor chatbot. When no strong match is found, a Stage 2.5 LLM proposal step generates speculative career suggestions tailored to your profile.
 
 > **About this project**
-> Echelon began as my final-year project for the **Diploma in Information Technology**. This repository is a refined and substantially expanded follow-on to that submission — adding resume import, dark mode, course recommendations, public share links, PDF export, an onboarding tour, deployment configs, the Vantage chatbot, and full multimodal attachment handling. The original academic version has been preserved in the v2 / v2.1 git history; the current `main` is v2.2.
+> Echelon began as my final-year project for the **Diploma in Information Technology**. This repository is a refined and substantially expanded follow-on to that submission — adding resume import, dark mode, course recommendations, public share links, PDF export, an onboarding tour, deployment configs, the Vantage chatbot, and full multimodal attachment handling. The original academic version has been preserved in the v2 / v2.1 git history; the current `main` is v2.3.
 
 ---
 
@@ -12,9 +14,9 @@
 | Feature | Details |
 |---|---|
 | **Profile-driven matching** | Multi-step form captures skills, interests, education, and Big Five personality scores. A deterministic rule engine scores ~25 curated tech-adjacent careers (plus optional O\*NET ingestion) on weighted skill, personality, and interest dimensions. |
-| **Two-stage LLM ranking** | Top-10 rule candidates re-ranked by `llama-3.3-70b-versatile` with explicit guidance to question narrow-specialty bias. Returns top 5 with fit reasoning, strengths, risks, and confidence. |
+| **Two-stage LLM ranking** | Top-10 rule candidates re-ranked by a Groq LLM (`openai/gpt-oss-120b` by default) with explicit guidance to question narrow-specialty bias. Returns top 5 with fit reasoning, strengths, risks, and confidence. |
 | **Speculative career proposal** | When no rule score clears the threshold, a Stage 2.5 LLM generates novel career suggestions from your profile combination, persisted with a clear "AI Suggested" badge. |
-| **Skill gaps + learning roadmap** | Per-career: gap skills tagged easy / medium / hard by `llama-3.1-8b-instant`, plus a three-phase Beginner / Intermediate / Advanced roadmap. |
+| **Skill gaps + learning roadmap** | Per-career: gap skills tagged easy / medium / hard by a smaller, faster model (`openai/gpt-oss-20b`), plus a three-phase Beginner / Intermediate / Advanced roadmap. |
 | **Resume import** | Upload PDF, DOCX, or TXT to pre-fill the form. Multi-stage validation: size → MIME (libmagic) → text extraction (pypdf, pdfplumber fallback for graphically-designed CVs, python-docx) → heuristic resume detection → structured LLM extraction → confidence threshold. |
 | **YouTube playlist courses** | Each career card has a "Bridge the gap" section. YouTube provider returns full course **playlists** (not single videos); Tavily provider adds curated platforms (Udemy, Coursera, edX, freeCodeCamp). LLM ranks the combined pool and picks the 5 most relevant. Cached per career for 7 days. |
 | **Vantage chatbot** | Floating chat widget on the results page. Knows your full profile and recommendation context, answers follow-ups ("why is full-stack ranked above frontend?", "what should I learn first?"), and accepts attachments — PDFs, DOCXs, TXT files (text-extracted into context) and images (sent to a Groq vision model). |
@@ -29,7 +31,7 @@
 ## Tech stack
 
 **Backend** — FastAPI 0.111 · SQLAlchemy 2 (async) · Alembic · Pydantic v2 · PostgreSQL 15 · WeasyPrint + Jinja2 · pypdf / pdfplumber / python-docx / python-magic · slowapi · httpx
-**LLM** — Groq Cloud (`llama-3.3-70b-versatile` for ranking + chat, `llama-3.1-8b-instant` for extraction tasks, `meta-llama/llama-4-scout-17b-16e-instruct` for Vantage vision messages)
+**LLM** — Groq Cloud (`openai/gpt-oss-120b` for ranking + chat, `openai/gpt-oss-20b` for extraction tasks, `qwen/qwen3.8-27b` for Vantage image messages). Every model is configurable via `GROQ_MODEL_*` env vars, because Groq retires models periodically
 **Frontend** — Next.js 14 (App Router) · TypeScript strict · Tailwind CSS · shadcn/ui · TanStack Query · React Hook Form · Zod · next-themes · react-joyride · lucide-react
 **Infra** — Docker Compose for local dev · Railway (backend + Postgres) · Vercel (frontend)
 
@@ -92,7 +94,7 @@ FastAPI (Python 3.11)
     │    Education soft penalty: high_school + high-difficulty career → score × 0.7
     │    Top 10 candidates passed to Stage 2
     │
-    ├─ Stage 2: Groq re-rank (llama-3.3-70b-versatile, temp 0.3)
+    ├─ Stage 2: Groq re-rank (gpt-oss-120b, temp 0.3)
     │    Returns top 5 with fit_reasoning, strengths, risks, confidence
     │    Prompt explicitly warns against narrow-specialty over-fitting
     │
@@ -100,7 +102,7 @@ FastAPI (Python 3.11)
     │    Generates speculative careers not in the database
     │
     ├─ Stage 3: Batched gap tagging + roadmap
-    │    3-phase roadmap per career; skill difficulty tagged by llama-3.1-8b-instant
+    │    3-phase roadmap per career; skill difficulty tagged by gpt-oss-20b
     │
     ├─ Resume parsing: size → MIME → extract → heuristic → LLM → confidence threshold
     │
@@ -128,6 +130,9 @@ FastAPI (Python 3.11)
 | `TAVILY_API_KEY` | Optional | Tavily Search API. Falls back to YouTube-only when absent. |
 | `MAX_UPLOAD_SIZE_MB` | Optional | Max resume file size in MB (default `5`) |
 | `RESUME_CONFIDENCE_THRESHOLD` | Optional | Combined parse confidence floor (default `0.4`) |
+| `GROQ_MODEL_RANKING`, `GROQ_MODEL_CHAT` | Optional | Main model for ranking, roadmaps, and Vantage (default `openai/gpt-oss-120b`) |
+| `GROQ_MODEL_EXTRACTION` | Optional | Faster model for resume extraction, gap tagging, and course ranking (default `openai/gpt-oss-20b`) |
+| `GROQ_MODEL_CHAT_VISION` | Optional | Image-capable model for Vantage image attachments (default `qwen/qwen3.8-27b`) |
 | `PROPOSE_THRESHOLD` | Optional | Rule score below which LLM career proposal triggers (default `0.4`) |
 | `COURSE_CACHE_TTL_DAYS` | Optional | Days to cache course results per career slug (default `7`) |
 

@@ -1,6 +1,6 @@
 [project]
 name = "echelon-backend"
-version = "2.2.0"
+version = "2.3.0"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.111.0",
