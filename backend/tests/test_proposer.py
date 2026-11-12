@@ -141,7 +141,7 @@ async def test_run_proposal_returns_career_dicts(monkeypatch):
         },
         top_career_names=["Data Scientist"],
         existing_names={"Data Scientist"},
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
     )
 
     assert len(result) == 1
@@ -179,7 +179,7 @@ async def test_run_proposal_deduplicates_existing_names(monkeypatch):
         },
         top_career_names=[],
         existing_names=existing,
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
     )
     assert result == []
 
@@ -213,7 +213,7 @@ async def test_run_proposal_returns_empty_on_validation_failure(monkeypatch):
         },
         top_career_names=[],
         existing_names=set(),
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
     )
     assert result == []
 

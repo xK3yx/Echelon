@@ -4,12 +4,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     database_url: str
     groq_api_key: str = ""
-    groq_model_ranking: str = "llama-3.3-70b-versatile"
+    # Groq retires models periodically (the original Llama 3.x and Llama 4
+    # Scout models are gone), so every model is overridable from the env.
+    groq_model_ranking: str = "openai/gpt-oss-120b"
     # Smaller model used only for pure formatting/extraction steps (faster, cheaper)
-    groq_model_extraction: str = "llama-3.1-8b-instant"
+    groq_model_extraction: str = "openai/gpt-oss-20b"
     # Vantage chat (Phase B) — text and vision-capable models
-    groq_model_chat: str = "llama-3.3-70b-versatile"
-    groq_model_chat_vision: str = "meta-llama/llama-4-scout-17b-16e-instruct"
+    groq_model_chat: str = "openai/gpt-oss-120b"
+    groq_model_chat_vision: str = "qwen/qwen3.8-27b"
     debug: bool = False
     # Single shared token for admin endpoints. Empty string = admin features disabled.
     admin_token: str = ""

@@ -2,7 +2,7 @@
 Batched gap-tagging + roadmap generation for the 5 LLM-ranked careers.
 
 One Groq call covers all 5 careers, keeping the total recommendation
-pipeline at 2 LLM calls (ranking + this).  Uses llama-3.3-70b-versatile at
+pipeline at 2 LLM calls (ranking + this).  Uses the ranking model (GROQ_MODEL_RANKING) at
 temperature 0.2 (more deterministic than ranking) because roadmap content
 must be coherent and actionable rather than creative.
 """
@@ -63,7 +63,7 @@ async def run_gap_roadmap(
 
     messages = build_gap_roadmap_messages(ranked_careers, gaps_by_slug)
     raw = await groq.chat_completion(
-        model=settings.groq_model_ranking,  # llama-3.3-70b-versatile
+        model=settings.groq_model_ranking,
         messages=messages,
         temperature=0.2,
         max_tokens=4096,

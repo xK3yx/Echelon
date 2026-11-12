@@ -4,7 +4,7 @@ Skill gap analysis — two responsibilities:
 1. compute_missing_skills() — purely deterministic, no LLM.
    Called by both the recommendations pipeline and /api/analyze.
 
-2. run_analyze() — single LLM call (llama-3.1-8b-instant) that tags the
+2. run_analyze() — single LLM call (the extraction model) that tags the
    missing skills with easy/medium/hard difficulty.  Used only by the
    /api/analyze endpoint.  The lighter model is appropriate here because
    this step is straightforward extraction/classification, not reasoning.
@@ -43,7 +43,7 @@ async def run_analyze(
     """
     Tag each missing skill with a learning-difficulty estimate.
 
-    Uses llama-3.1-8b-instant (extraction task — no deep reasoning needed).
+    Uses the extraction model (no deep reasoning needed).
     Retries once with a stricter prompt on validation failure.
 
     Returns AnalyzeOutput with skill_gaps list.
@@ -54,7 +54,7 @@ async def run_analyze(
 
     messages = build_analyze_messages(career_slug, career_name, missing_skills)
     raw = await groq.chat_completion(
-        # llama-3.1-8b-instant: adequate for classification; faster and cheaper
+        # Extraction model: adequate for classification; faster and cheaper
         model=settings.groq_model_extraction,
         messages=messages,
         temperature=0.2,

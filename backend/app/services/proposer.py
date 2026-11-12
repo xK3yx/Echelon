@@ -6,7 +6,7 @@ and the caller set allow_proposed=True.  Returns 0-2 validated career dicts
 ready to be persisted to the careers table.
 
 Design notes:
-- One Groq call (llama-3.3-70b-versatile, temp 0.5 — needs creativity).
+- One Groq call (ranking model, temp 0.5 — needs creativity).
 - Retries ONCE with a stricter prompt on validation failure.
 - On second failure: logs the error and returns [] — never fails the outer request.
 - Deduplicates proposed names against the full set of existing career names
