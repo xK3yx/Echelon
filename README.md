@@ -242,6 +242,6 @@ Admin endpoints (`/api/admin/...`) require `Authorization: Bearer <ADMIN_TOKEN>`
 
 ## Licence and credits
 
-This is an academic / portfolio project. Code in this repository is provided as-is for review and learning purposes. Career data attribution to O\*NET / U.S. Department of Labor (CC BY 4.0) is required wherever the dataset is used.
+Code in this repository is released under the [MIT License](LICENSE). Career data attribution to O\*NET / U.S. Department of Labor (CC BY 4.0) is required wherever the dataset is used.
 
 Originally submitted as my final-year project for the **Diploma in Information Technology**. The version on `main` is a substantially refined and expanded follow-on with features that were beyond the scope of the original submission.
