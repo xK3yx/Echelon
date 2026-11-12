@@ -17,7 +17,9 @@
     size: A4;
     margin: 15mm 15mm 20mm 15mm;
     @bottom-center {
-      content: "Echelon Career Report — generated " attr(data-date) " — AI analysis, not career advice";
+      /* Literal string, not attr(): margin boxes have no element, and
+         WeasyPrint 70+ crashes on attr() there. */
+      content: "Echelon Career Report — generated {{ generated_at }} — AI analysis, not career advice";
       font-size: 7pt;
       color: #888;
     }
