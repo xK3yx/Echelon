@@ -25,6 +25,7 @@ import {
 import { api, ApiError } from "@/lib/api";
 import type { ChatMessage, AttachmentKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 const MAX_FILE_SIZE_MB = 10;
 const ALLOWED_MIME_PREFIXES = ["application/pdf", "application/vnd.", "text/plain", "image/"];
@@ -308,7 +309,8 @@ function Bubble({ message }: { message: ChatMessage }) {
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words",
+          "max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-relaxed break-words",
+          isUser && "whitespace-pre-wrap",
           isUser
             ? "bg-primary text-primary-foreground rounded-tr-sm"
             : "bg-muted text-foreground rounded-tl-sm",
@@ -331,8 +333,34 @@ function Bubble({ message }: { message: ChatMessage }) {
             <span className="truncate">{message.attachment_name}</span>
           </div>
         )}
-        {message.content}
+        {isUser ? message.content : <AssistantMarkdown text={message.content} />}
       </div>
     </div>
+  );
+}
+
+// Assistant replies often use markdown (bold, lists). react-markdown renders
+// it without allowing raw HTML, so model output can't inject markup.
+function AssistantMarkdown({ text }: { text: string }) {
+  return (
+    <ReactMarkdown
+      components={{
+        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+        ul: ({ children }) => <ul className="list-disc pl-4 mb-2 last:mb-0 space-y-1">{children}</ul>,
+        ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 last:mb-0 space-y-1">{children}</ol>,
+        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+        h1: ({ children }) => <p className="font-semibold mb-1">{children}</p>,
+        h2: ({ children }) => <p className="font-semibold mb-1">{children}</p>,
+        h3: ({ children }) => <p className="font-semibold mb-1">{children}</p>,
+        a: ({ children, href }) => (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+            {children}
+          </a>
+        ),
+        code: ({ children }) => <code className="rounded bg-background/60 px-1 text-xs">{children}</code>,
+      }}
+    >
+      {text}
+    </ReactMarkdown>
   );
 }
