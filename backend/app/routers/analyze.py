@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.limiter import limiter
 from app.llm.client import GroqError
 from app.models.career import Career
 from app.models.profile import Profile
@@ -13,7 +14,9 @@ router = APIRouter(tags=["analyze"])
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
+@limiter.limit("30/hour")
 async def analyze_gap(
+    request: Request,
     body: AnalyzeRequest,
     db: AsyncSession = Depends(get_db),
 ) -> AnalyzeResponse:

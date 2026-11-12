@@ -18,13 +18,14 @@ import pathlib
 import uuid
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.limiter import limiter
 from app.models.recommendation import Recommendation
 
 logger = logging.getLogger(__name__)
@@ -54,7 +55,9 @@ except Exception as _exc:  # pragma: no cover
 
 
 @router.get("/recommendations/{recommendation_id}/pdf")
+@limiter.limit("30/hour")
 async def export_pdf(
+    request: Request,
     recommendation_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ) -> Response:

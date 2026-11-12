@@ -20,11 +20,12 @@ from __future__ import annotations
 
 import re
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.limiter import limiter
 from app.services.courses.aggregator import get_courses
 from app.services.courses.schemas import Course
 
@@ -47,7 +48,9 @@ class CourseRecommendResponse(BaseModel):
 
 
 @router.get("/courses/recommend", response_model=CourseRecommendResponse)
+@limiter.limit("60/hour")
 async def recommend_courses(
+    request: Request,
     career_slug: str = Query(
         ...,
         description="Career slug, e.g. 'data-scientist'",

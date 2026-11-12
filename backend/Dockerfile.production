@@ -58,11 +58,14 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 COPY . .
 
-# Run migrations then start the server.
+# Run migrations then start the server. --proxy-headers makes rate limits
+# see the real client IP behind the platform's load balancer.
 # PORT env var is injected by Railway/Render; default to 8000.
 CMD alembic upgrade head && \
     uvicorn app.main:app \
       --host 0.0.0.0 \
       --port "${PORT:-8000}" \
       --workers 2 \
-      --no-access-log
+      --no-access-log \
+      --proxy-headers \
+      --forwarded-allow-ips="*"

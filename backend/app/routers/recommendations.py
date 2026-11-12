@@ -1,11 +1,12 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
+from app.limiter import limiter
 from app.llm.client import GroqError
 from app.models.career import Career
 from app.models.profile import Profile
@@ -47,7 +48,9 @@ def _build_career_data(career: Career) -> CareerData:
 
 
 @router.post("/recommendations", response_model=RecommendationRead, status_code=201)
+@limiter.limit("20/hour")
 async def create_recommendation(
+    request: Request,
     body: RecommendationRequest,
     db: AsyncSession = Depends(get_db),
 ) -> Recommendation:
