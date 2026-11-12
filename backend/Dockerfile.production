@@ -58,8 +58,17 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 COPY . .
 
-# Run migrations then start the server. --proxy-headers makes rate limits
-# see the real client IP behind the platform's load balancer.
+# --proxy-headers makes rate limits see the real client IP behind the
+# platform's load balancer. uvicorn reads the trusted proxies from
+# FORWARDED_ALLOW_IPS. Never use "*": uvicorn then takes the leftmost
+# X-Forwarded-For entry, which the client controls, so anyone could reset
+# their rate limit by sending a fake header. Trusting only private and
+# CGNAT ranges (where platform proxies connect from) makes uvicorn walk
+# X-Forwarded-For from the right and stop at the first public address,
+# the one the edge proxy appended. Override if your platform differs.
+ENV FORWARDED_ALLOW_IPS="127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,100.64.0.0/10,fc00::/7"
+
+# Run migrations then start the server.
 # PORT env var is injected by Railway/Render; default to 8000.
 CMD alembic upgrade head && \
     uvicorn app.main:app \
@@ -67,5 +76,4 @@ CMD alembic upgrade head && \
       --port "${PORT:-8000}" \
       --workers 2 \
       --no-access-log \
-      --proxy-headers \
-      --forwarded-allow-ips="*"
+      --proxy-headers

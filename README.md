@@ -191,6 +191,8 @@ Tests require the backend container to be running (`docker compose up -d`). The 
 3. Set the remaining environment variables in the Railway dashboard (`GROQ_API_KEY`, `ADMIN_TOKEN`, optional `YOUTUBE_API_KEY` / `TAVILY_API_KEY`, plus `PUBLIC_BASE_URL` once you know your Vercel URL).
 4. Deploy. Migrations run automatically on startup (`alembic upgrade head`).
 
+Rate limits are keyed on the client IP from `X-Forwarded-For`, trusting only proxies in private address ranges (`FORWARDED_ALLOW_IPS` in `backend/Dockerfile.production`). If your platform's proxy connects from elsewhere, set `FORWARDED_ALLOW_IPS` to its address range. Never set it to `*`, which lets clients reset their own limits with a forged header.
+
 ### Frontend → Vercel
 
 1. Import the repository into Vercel and set the root directory to `frontend/`.
