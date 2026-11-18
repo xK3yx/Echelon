@@ -1,6 +1,6 @@
 # Echelon
 
-[![CI](https://github.com/xK3yx/Echelon/actions/workflows/ci.yml/badge.svg)](https://github.com/xK3yx/Echelon/actions/workflows/ci.yml)
+[![CI](https://github.com/xK3yx/Echelon/actions/workflows/ci.yml/badge.svg)](https://github.com/xK3yx/Echelon/actions/workflows/ci.yml) ![AI](https://img.shields.io/badge/AI-Groq-6366f1?style=flat-square) ![Stack](https://img.shields.io/badge/Stack-FastAPI%20%2B%20Next.js-10b981?style=flat-square) ![License](https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square)
 
 **AI-assisted career intelligence.** Describe your skills, personality, and interests; Echelon ranks career paths against your profile using a deterministic rule engine followed by a Groq LLM re-ranker, generates a per-career skill-gap analysis with a three-phase learning roadmap, recommends YouTube playlist courses to bridge each gap, and lets you keep the conversation going with **Vantage**, an AI career-counsellor chatbot. When no strong match is found, a Stage 2.5 LLM proposal step generates speculative career suggestions tailored to your profile.
 
