@@ -439,11 +439,11 @@ export default function ProfilePage() {
                 Back
               </Button>
               {step < STEPS.length - 1 ? (
-                <Button type="button" onClick={next}>
+                <Button key="continue" type="button" onClick={next}>
                   Continue →
                 </Button>
               ) : (
-                <Button type="submit">Find My Careers →</Button>
+                <Button key="submit" type="submit">Find My Careers →</Button>
               )}
             </div>
 
