@@ -7,6 +7,12 @@
 > **About this project**
 > Echelon began as my final-year project for the **Diploma in Information Technology**. This repository is a refined and substantially expanded follow-on to that submission — adding resume import, dark mode, course recommendations, public share links, PDF export, an onboarding tour, deployment configs, the Vantage chatbot, and full multimodal attachment handling. The original academic version has been preserved in the v2 / v2.1 git history; the current `main` is v2.3.
 
+## Demo
+
+![Echelon demo: filling in the four-step profile, getting ranked career matches with a skill-gap roadmap and courses, and asking Vantage a follow-up question](docs/demo.gif)
+
+*Recorded live on a local Docker setup with Groq. The wait for the recommendation is sped up 6x.*
+
 ---
 
 ## Features
